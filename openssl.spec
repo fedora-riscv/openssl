@@ -21,7 +21,7 @@
 Summary: A general purpose cryptography library with TLS implementation
 Name: openssl
 Version: 1.0.0b
-Release: 1%{?dist}
+Release: 1%{?dist}.1
 # We remove certain patented algorithms from the openssl source tarball
 # with the hobble-openssl script which is included below.
 Source: openssl-%{version}-usa.tar.bz2
@@ -230,8 +230,8 @@ make -C test apps tests
     %{?__debug_package:%{__debug_install_post}} \
     %{__arch_install_post} \
     %{__os_install_post} \
-    crypto/fips/fips_standalone_sha1 $RPM_BUILD_ROOT/%{_lib}/libcrypto.so.%{version} >$RPM_BUILD_ROOT/%{_lib}/.libcrypto.so.%{version}.hmac \
-    ln -sf .libcrypto.so.%{version}.hmac $RPM_BUILD_ROOT/%{_lib}/.libcrypto.so.%{soversion}.hmac \
+    crypto/fips/fips_standalone_sha1 $RPM_BUILD_ROOT%{_libdir}/libcrypto.so.%{version} >$RPM_BUILD_ROOT%{_libdir}/.libcrypto.so.%{version}.hmac \
+    ln -sf .libcrypto.so.%{version}.hmac $RPM_BUILD_ROOT%{_libdir}/.libcrypto.so.%{soversion}.hmac \
     crypto/fips/fips_standalone_sha1 $RPM_BUILD_ROOT%{_libdir}/libssl.so.%{version} >$RPM_BUILD_ROOT%{_libdir}/.libssl.so.%{version}.hmac \
     ln -sf .libssl.so.%{version}.hmac $RPM_BUILD_ROOT%{_libdir}/.libssl.so.%{soversion}.hmac \
 %{nil}
@@ -246,17 +246,11 @@ mv $RPM_BUILD_ROOT%{_libdir}/engines $RPM_BUILD_ROOT%{_libdir}/openssl
 mv $RPM_BUILD_ROOT%{_sysconfdir}/pki/tls/man/* $RPM_BUILD_ROOT%{_mandir}/
 rmdir $RPM_BUILD_ROOT%{_sysconfdir}/pki/tls/man
 rename so.%{soversion} so.%{version} $RPM_BUILD_ROOT%{_libdir}/*.so.%{soversion}
-mkdir $RPM_BUILD_ROOT/%{_lib}
-mv $RPM_BUILD_ROOT%{_libdir}/libcrypto.so.%{version} $RPM_BUILD_ROOT/%{_lib}
 for lib in $RPM_BUILD_ROOT%{_libdir}/*.so.%{version} ; do
 	chmod 755 ${lib}
 	ln -s -f `basename ${lib}` $RPM_BUILD_ROOT%{_libdir}/`basename ${lib} .%{version}`
 	ln -s -f `basename ${lib}` $RPM_BUILD_ROOT%{_libdir}/`basename ${lib} .%{version}`.%{soversion}
-done
-for lib in $RPM_BUILD_ROOT/%{_lib}/*.so.%{version} ; do
-	chmod 755 ${lib}
-	ln -s -f ../../%{_lib}/`basename ${lib}` $RPM_BUILD_ROOT%{_libdir}/`basename ${lib} .%{version}`
-	ln -s -f `basename ${lib}` $RPM_BUILD_ROOT/%{_lib}/`basename ${lib} .%{version}`.%{soversion}
+
 done
 
 # Install a makefile for generating keys and self-signed certs, and a script
@@ -359,11 +353,9 @@ rm -rf $RPM_BUILD_ROOT/%{_libdir}/fipscanister.*
 %config(noreplace) %{_sysconfdir}/pki/tls/openssl.cnf
 
 %attr(0755,root,root) %{_bindir}/openssl
-%attr(0755,root,root) /%{_lib}/libcrypto.so.%{version}
-%attr(0755,root,root) /%{_lib}/libcrypto.so.%{soversion}
-%attr(0755,root,root) %{_libdir}/libssl.so.%{version}
-%attr(0755,root,root) %{_libdir}/libssl.so.%{soversion}
-%attr(0644,root,root) /%{_lib}/.libcrypto.so.*.hmac
+%attr(0755,root,root) %{_libdir}/*.so.%{version}
+%attr(0755,root,root) %{_libdir}/*.so.%{soversion}
+%attr(0644,root,root) %{_libdir}/.libcrypto.so.*.hmac
 %attr(0644,root,root) %{_libdir}/.libssl.so.*.hmac
 %attr(0755,root,root) %{_libdir}/openssl
 %attr(0644,root,root) %{_mandir}/man1*/[ABD-Zabcd-z]*
@@ -393,6 +385,9 @@ rm -rf $RPM_BUILD_ROOT/%{_libdir}/fipscanister.*
 %postun -p /sbin/ldconfig
 
 %changelog
+* Tue Nov 23 2010 Tomas Mraz <tmraz@redhat.com> 1.0.0b-1.1
+- revert unintentional move of libcrypto to /lib
+
 * Tue Nov 16 2010 Tomas Mraz <tmraz@redhat.com> 1.0.0b-1
 - new upstream version fixing CVE-2010-3864 (#649304)
 
