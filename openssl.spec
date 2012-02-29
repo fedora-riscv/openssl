@@ -21,7 +21,8 @@
 Summary: A general purpose cryptography library with TLS implementation
 Name: openssl
 Version: 1.0.0g
-Release: 1%{?dist}
+Release: 2%{?dist}
+Epoch: 1
 # We have to remove certain patented algorithms from the openssl source
 # tarball with the hobble-openssl script which is included below.
 # The original openssl upstream tarball cannot be shipped in the .src.rpm.
@@ -429,6 +430,10 @@ rm -rf $RPM_BUILD_ROOT/%{_libdir}/fipscanister.*
 %postun -p /sbin/ldconfig
 
 %changelog
+* Wed Feb 29 2012 Tomas Mraz <tmraz@redhat.com> 1.0.0g-2
+- revert F17 build to 1.0.0g due to problems caused by new
+  features introduced in 1.0.1. Epoch set to 1.
+
 * Thu Jan 19 2012 Tomas Mraz <tmraz@redhat.com> 1.0.0g-1
 - new upstream release fixing CVE-2012-0050 - DoS regression in
   DTLS support introduced by the previous release (#782795)
