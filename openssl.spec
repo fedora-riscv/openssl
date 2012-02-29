@@ -21,7 +21,7 @@
 Summary: A general purpose cryptography library with TLS implementation
 Name: openssl
 Version: 1.0.0g
-Release: 3%{?dist}
+Release: 4%{?dist}
 Epoch: 1
 # We have to remove certain patented algorithms from the openssl source
 # tarball with the hobble-openssl script which is included below.
@@ -99,7 +99,7 @@ protocols.
 %package devel
 Summary: Files for development of applications which will use OpenSSL
 Group: Development/Libraries
-Requires: %{name}{?_isa} = %{epoch}:%{version}-%{release}, krb5-devel, zlib-devel
+Requires: %{name}%{?_isa} = %{epoch}:%{version}-%{release}, krb5-devel, zlib-devel
 Requires: pkgconfig
 
 %description devel
@@ -110,7 +110,7 @@ support various cryptographic algorithms and protocols.
 %package static
 Summary:  Libraries for static linking of applications which will use OpenSSL
 Group: Development/Libraries
-Requires: %{name}-devel{?_isa} = %{epoch}:%{version}-%{release}
+Requires: %{name}-devel%{?_isa} = %{epoch}:%{version}-%{release}
 
 %description static
 OpenSSL is a toolkit for supporting cryptography. The openssl-static
@@ -430,7 +430,7 @@ rm -rf $RPM_BUILD_ROOT/%{_libdir}/fipscanister.*
 %postun -p /sbin/ldconfig
 
 %changelog
-* Wed Feb 29 2012 Tomas Mraz <tmraz@redhat.com> 1.0.0g-3
+* Wed Feb 29 2012 Tomas Mraz <tmraz@redhat.com> 1.0.0g-4
 - fixup requires to properly require the Epoch 1
 
 * Wed Feb 29 2012 Tomas Mraz <tmraz@redhat.com> 1.0.0g-2
