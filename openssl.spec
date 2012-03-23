@@ -20,7 +20,7 @@
 
 Summary: A general purpose cryptography library with TLS implementation
 Name: openssl
-Version: 1.0.0g
+Version: 1.0.0h
 Release: 1%{?dist}
 # We have to remove certain patented algorithms from the openssl source
 # tarball with the hobble-openssl script which is included below.
@@ -43,9 +43,7 @@ Patch6: openssl-0.9.8b-test-use-localhost.patch
 Patch7: openssl-1.0.0-timezone.patch
 # Bug fixes
 Patch23: openssl-1.0.0-beta4-default-paths.patch
-Patch24: openssl-0.9.8j-bad-mime.patch
 Patch25: openssl-1.0.0a-manfix.patch
-Patch26: openssl-1.0.0a-load-certs.patch
 # Functionality changes
 Patch32: openssl-0.9.8g-ia64.patch
 Patch33: openssl-1.0.0-beta4-ca-dir.patch
@@ -61,7 +59,7 @@ Patch45: openssl-0.9.8j-env-nozlib.patch
 Patch47: openssl-1.0.0-beta5-readme-warning.patch
 Patch49: openssl-1.0.0-beta4-algo-doc.patch
 Patch50: openssl-1.0.0-beta4-dtls1-abi.patch
-Patch51: openssl-1.0.0g-version.patch
+Patch51: openssl-1.0.0h-version.patch
 Patch52: openssl-1.0.0b-aesni.patch
 Patch53: openssl-1.0.0-name-hash.patch
 Patch54: openssl-1.0.0c-speed-fips.patch
@@ -77,7 +75,6 @@ Patch63: openssl-1.0.0d-xmpp-starttls.patch
 Patch64: openssl-1.0.0d-intelopts.patch
 Patch65: openssl-1.0.0e-chil-fixes.patch
 Patch66: openssl-1.0.0-sha2test.patch
-Patch67: openssl-1.0.0e-pkgconfig-private.patch
 # Backported fixes including security fixes
 Patch81: openssl-1.0.0d-padlock64.patch
 
@@ -143,9 +140,7 @@ from other formats to the formats used by the OpenSSL toolkit.
 %patch7 -p1 -b .timezone
 
 %patch23 -p1 -b .default-paths
-%patch24 -p1 -b .bad-mime
 %patch25 -p1 -b .manfix
-%patch26 -p1 -b .load-certs
 
 %patch32 -p1 -b .ia64
 %patch33 -p1 -b .ca-dir
@@ -177,7 +172,6 @@ from other formats to the formats used by the OpenSSL toolkit.
 %patch64 -p1 -b .intelopts
 %patch65 -p1 -b .chil
 %patch66 -p1 -b .sha2test
-%patch67 -p1 -b .private
 
 %patch81 -p1 -b .padlock64
 
@@ -429,6 +423,11 @@ rm -rf $RPM_BUILD_ROOT/%{_libdir}/fipscanister.*
 %postun -p /sbin/ldconfig
 
 %changelog
+* Fri Mar 23 2012 Tomas Mraz <tmraz@redhat.com> 1.0.0h-1
+- new upstream release fixing CVE-2012-0884 - Bleichenbacher attack
+  against PKCS#7 and CMS (#802725) and CVE-2012-1165 mime_param_cmp
+  NULL dereference (#802489)
+
 * Thu Jan 19 2012 Tomas Mraz <tmraz@redhat.com> 1.0.0g-1
 - new upstream release fixing CVE-2012-0050 - DoS regression in
   DTLS support introduced by the previous release (#782795)
