@@ -20,7 +20,7 @@
 
 Summary: A general purpose cryptography library with TLS implementation
 Name: openssl
-Version: 1.0.0h
+Version: 1.0.0i
 Release: 1%{?dist}
 # We have to remove certain patented algorithms from the openssl source
 # tarball with the hobble-openssl script which is included below.
@@ -57,9 +57,9 @@ Patch43: openssl-1.0.0a-fipsmode.patch
 Patch44: openssl-1.0.0-beta3-fipsrng.patch
 Patch45: openssl-0.9.8j-env-nozlib.patch
 Patch47: openssl-1.0.0-beta5-readme-warning.patch
-Patch49: openssl-1.0.0-beta4-algo-doc.patch
+Patch49: openssl-1.0.1a-algo-doc.patch
 Patch50: openssl-1.0.0-beta4-dtls1-abi.patch
-Patch51: openssl-1.0.0h-version.patch
+Patch51: openssl-1.0.0i-version.patch
 Patch52: openssl-1.0.0b-aesni.patch
 Patch53: openssl-1.0.0-name-hash.patch
 Patch54: openssl-1.0.0c-speed-fips.patch
@@ -423,6 +423,10 @@ rm -rf $RPM_BUILD_ROOT/%{_libdir}/fipscanister.*
 %postun -p /sbin/ldconfig
 
 %changelog
+* Fri Apr 20 2012 Tomas Mraz <tmraz@redhat.com> 1.0.0i-1
+- new upstream release fixing CVE-2012-2110 - memory corruption
+  when loading asn1 from BIO
+
 * Fri Mar 23 2012 Tomas Mraz <tmraz@redhat.com> 1.0.0h-1
 - new upstream release fixing CVE-2012-0884 - Bleichenbacher attack
   against PKCS#7 and CMS (#802725) and CVE-2012-1165 mime_param_cmp
