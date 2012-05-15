@@ -20,7 +20,7 @@
 
 Summary: A general purpose cryptography library with TLS implementation
 Name: openssl
-Version: 1.0.0i
+Version: 1.0.0j
 Release: 1%{?dist}
 Epoch: 1
 # We have to remove certain patented algorithms from the openssl source
@@ -60,7 +60,7 @@ Patch45: openssl-0.9.8j-env-nozlib.patch
 Patch47: openssl-1.0.0-beta5-readme-warning.patch
 Patch49: openssl-1.0.1a-algo-doc.patch
 Patch50: openssl-1.0.0-beta4-dtls1-abi.patch
-Patch51: openssl-1.0.0i-version.patch
+Patch51: openssl-1.0.0j-version.patch
 Patch52: openssl-1.0.0b-aesni.patch
 Patch53: openssl-1.0.0-name-hash.patch
 Patch54: openssl-1.0.0c-speed-fips.patch
@@ -424,6 +424,10 @@ rm -rf $RPM_BUILD_ROOT/%{_libdir}/fipscanister.*
 %postun -p /sbin/ldconfig
 
 %changelog
+* Tue May 15 2012 Tomas Mraz <tmraz@redhat.com> 1.0.0j-1
+- new upstream release fixing CVE-2012-2333 - improper record
+  length checking in DTLS
+
 * Fri Apr 20 2012 Tomas Mraz <tmraz@redhat.com> 1.0.0i-1
 - new upstream release fixing CVE-2012-2110 - memory corruption
   when loading asn1 from BIO
