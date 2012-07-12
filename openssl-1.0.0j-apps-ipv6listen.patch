@@ -1,7 +1,7 @@
-diff -up openssl-1.0.0c/apps/s_socket.c.ipv6listen openssl-1.0.0c/apps/s_socket.c
---- openssl-1.0.0c/apps/s_socket.c.ipv6listen	2011-01-24 16:44:18.000000000 +0100
-+++ openssl-1.0.0c/apps/s_socket.c	2011-01-24 16:56:25.000000000 +0100
-@@ -335,15 +335,16 @@ int do_server(char *port, int type, int 
+diff -up openssl-1.0.0j/apps/s_socket.c.ipv6listen openssl-1.0.0j/apps/s_socket.c
+--- openssl-1.0.0j/apps/s_socket.c.ipv6listen	2012-05-15 20:24:08.641893509 +0200
++++ openssl-1.0.0j/apps/s_socket.c	2012-07-12 11:49:23.220298894 +0200
+@@ -335,25 +335,31 @@ int do_server(char *port, int type, int
  
  static int init_server(int *sock, char *port, int type)
  	{
@@ -9,18 +9,39 @@ diff -up openssl-1.0.0c/apps/s_socket.c.ipv6listen openssl-1.0.0c/apps/s_socket.
 +	struct addrinfo *res, *res0 = NULL, hints;
  	char * failed_call = NULL;
 -	char port_name[8];
- 	int s;
+-	int s;
++	int s = INVALID_SOCKET;
  	int e;
  
  	if (!ssl_sock_init()) return(0);
  
  	memset(&hints, '\0', sizeof(hints));
-+        hints.ai_family = AF_INET6;
++	hints.ai_family = AF_INET6;
 +tryipv4:
  	hints.ai_socktype = type;
- 	hints.ai_flags = AI_PASSIVE | AI_ADDRCONFIG;
+-	hints.ai_flags = AI_PASSIVE | AI_ADDRCONFIG;
++	hints.ai_flags = AI_PASSIVE;
  	
-@@ -365,6 +366,12 @@ static int init_server(int *sock, char *
+ 	e = getaddrinfo(NULL, port, &hints, &res);
+ 	if (e)
+ 		{
+-		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(e));
+-		if (e == EAI_SYSTEM)
+-			perror("getaddrinfo");
+-		return (0);
++		if (hints.ai_family == AF_INET)
++			{
++			fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(e));
++			if (e == EAI_SYSTEM)
++				perror("getaddrinfo");
++			return (0);
++			}
++			else
++				res = NULL;
+ 		}
+ 
+ 	res0 = res;
+@@ -365,6 +371,12 @@ static int init_server(int *sock, char *
  			failed_call = "socket";
  			goto nextres;
  			}
@@ -33,7 +54,7 @@ diff -up openssl-1.0.0c/apps/s_socket.c.ipv6listen openssl-1.0.0c/apps/s_socket.
  #if defined SOL_SOCKET && defined SO_REUSEADDR
  		{
  		int j = 1;
-@@ -392,9 +399,19 @@ nextres:
+@@ -392,9 +404,19 @@ nextres:
  			close(s);
  		res = res->ai_next;
  	}

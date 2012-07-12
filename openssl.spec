@@ -21,7 +21,7 @@
 Summary: A general purpose cryptography library with TLS implementation
 Name: openssl
 Version: 1.0.0j
-Release: 1%{?dist}
+Release: 2%{?dist}
 Epoch: 1
 # We have to remove certain patented algorithms from the openssl source
 # tarball with the hobble-openssl script which is included below.
@@ -64,7 +64,7 @@ Patch51: openssl-1.0.0j-version.patch
 Patch52: openssl-1.0.0b-aesni.patch
 Patch53: openssl-1.0.0-name-hash.patch
 Patch54: openssl-1.0.0c-speed-fips.patch
-Patch55: openssl-1.0.0c-apps-ipv6listen.patch
+Patch55: openssl-1.0.0j-apps-ipv6listen.patch
 Patch56: openssl-1.0.0c-rsa-x931.patch
 Patch57: openssl-1.0.0c-fips186-3.patch
 Patch58: openssl-1.0.0c-fips-md5-allow.patch
@@ -424,6 +424,9 @@ rm -rf $RPM_BUILD_ROOT/%{_libdir}/fipscanister.*
 %postun -p /sbin/ldconfig
 
 %changelog
+* Thu Jul 12 2012 Tomas Mraz <tmraz@redhat.com> 1.0.0j-2
+- fix s_server with new glibc when no global IPv6 address (#839031)
+
 * Tue May 15 2012 Tomas Mraz <tmraz@redhat.com> 1.0.0j-1
 - new upstream release fixing CVE-2012-2333 - improper record
   length checking in DTLS
