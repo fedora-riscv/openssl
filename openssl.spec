@@ -20,8 +20,8 @@
 
 Summary: A general purpose cryptography library with TLS implementation
 Name: openssl
-Version: 1.0.0j
-Release: 2%{?dist}
+Version: 1.0.0k
+Release: 1%{?dist}
 Epoch: 1
 # We have to remove certain patented algorithms from the openssl source
 # tarball with the hobble-openssl script which is included below.
@@ -52,15 +52,15 @@ Patch34: openssl-0.9.6-x509.patch
 Patch35: openssl-0.9.8j-version-add-engines.patch
 Patch38: openssl-1.0.0-beta5-cipher-change.patch
 Patch39: openssl-1.0.0b-ipv6-apps.patch
-Patch40: openssl-1.0.0f-fips.patch
+Patch40: openssl-1.0.0k-fips.patch
 Patch41: openssl-1.0.0-beta3-fipscheck.patch
 Patch43: openssl-1.0.0a-fipsmode.patch
 Patch44: openssl-1.0.0-beta3-fipsrng.patch
-Patch45: openssl-0.9.8j-env-nozlib.patch
+Patch45: openssl-1.0.1e-env-zlib.patch
 Patch47: openssl-1.0.0-beta5-readme-warning.patch
 Patch49: openssl-1.0.1a-algo-doc.patch
 Patch50: openssl-1.0.0-beta4-dtls1-abi.patch
-Patch51: openssl-1.0.0j-version.patch
+Patch51: openssl-1.0.0k-version.patch
 Patch52: openssl-1.0.0b-aesni.patch
 Patch53: openssl-1.0.0-name-hash.patch
 Patch54: openssl-1.0.0c-speed-fips.patch
@@ -73,11 +73,13 @@ Patch60: openssl-1.0.0d-apps-dgst.patch
 Patch61: openssl-1.0.0d-cavs.patch
 Patch62: openssl-1.0.0-fips-aesni.patch
 Patch63: openssl-1.0.0d-xmpp-starttls.patch
-Patch64: openssl-1.0.0d-intelopts.patch
+Patch64: openssl-1.0.0k-intelopts.patch
 Patch65: openssl-1.0.0e-chil-fixes.patch
 Patch66: openssl-1.0.0-sha2test.patch
+Patch67: openssl-1.0.0k-secure-getenv.patch
 # Backported fixes including security fixes
 Patch81: openssl-1.0.0d-padlock64.patch
+Patch82: openssl-1.0.0k-backports.patch
 
 License: OpenSSL
 Group: System Environment/Libraries
@@ -153,7 +155,7 @@ from other formats to the formats used by the OpenSSL toolkit.
 %patch41 -p1 -b .fipscheck
 %patch43 -p1 -b .fipsmode
 %patch44 -p1 -b .fipsrng
-%patch45 -p1 -b .env-nozlib
+%patch45 -p1 -b .env-zlib
 %patch47 -p1 -b .warning
 %patch49 -p1 -b .algo-doc
 %patch50 -p1 -b .dtls1-abi
@@ -173,8 +175,10 @@ from other formats to the formats used by the OpenSSL toolkit.
 %patch64 -p1 -b .intelopts
 %patch65 -p1 -b .chil
 %patch66 -p1 -b .sha2test
+%patch67 -p1 -b .secure-getenv
 
 %patch81 -p1 -b .padlock64
+%patch82 -p1 -b .backports
 
 # Modify the various perl scripts to reference perl in the right location.
 perl util/perlpath.pl `dirname %{__perl}`
@@ -424,6 +428,9 @@ rm -rf $RPM_BUILD_ROOT/%{_libdir}/fipscanister.*
 %postun -p /sbin/ldconfig
 
 %changelog
+* Tue Feb 19 2013 Tomas Mraz <tmraz@redhat.com> 1.0.0k-1
+- new upstream release fixing multiple CVEs
+
 * Thu Jul 12 2012 Tomas Mraz <tmraz@redhat.com> 1.0.0j-2
 - fix s_server with new glibc when no global IPv6 address (#839031)
 

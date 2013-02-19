@@ -1,0 +1,775 @@
+diff --git a/doc/crypto/X509_STORE_CTX_get_error.pod b/doc/crypto/X509_STORE_CTX_get_error.pod
+index a883f6c..60e8332 100644
+--- a/doc/crypto/X509_STORE_CTX_get_error.pod
++++ b/doc/crypto/X509_STORE_CTX_get_error.pod
+@@ -278,6 +278,8 @@ happen if extended CRL checking is enabled.
+ an application specific error. This will never be returned unless explicitly
+ set by an application.
+ 
++=back
++
+ =head1 NOTES
+ 
+ The above functions should be used instead of directly referencing the fields
+diff --git a/doc/ssl/SSL_CTX_set_client_CA_list.pod b/doc/ssl/SSL_CTX_set_client_CA_list.pod
+index 632b556..5e66133 100644
+--- a/doc/ssl/SSL_CTX_set_client_CA_list.pod
++++ b/doc/ssl/SSL_CTX_set_client_CA_list.pod
+@@ -66,16 +66,16 @@ values:
+ 
+ =over 4
+ 
+-=item 1
+-
+-The operation succeeded.
+-
+ =item 0
+ 
+ A failure while manipulating the STACK_OF(X509_NAME) object occurred or
+ the X509_NAME could not be extracted from B<cacert>. Check the error stack
+ to find out the reason.
+ 
++=item 1
++
++The operation succeeded.
++
+ =back
+ 
+ =head1 EXAMPLES
+diff --git a/doc/ssl/SSL_CTX_use_psk_identity_hint.pod b/doc/ssl/SSL_CTX_use_psk_identity_hint.pod
+index b80e25b..7e60df5 100644
+--- a/doc/ssl/SSL_CTX_use_psk_identity_hint.pod
++++ b/doc/ssl/SSL_CTX_use_psk_identity_hint.pod
+@@ -81,6 +81,8 @@ SSL_CTX_use_psk_identity_hint() and SSL_use_psk_identity_hint() return
+ 
+ Return values from the server callback are interpreted as follows:
+ 
++=over 4
++
+ =item > 0
+ 
+ PSK identity was found and the server callback has provided the PSK
+@@ -99,4 +101,6 @@ completely.
+ PSK identity was not found. An "unknown_psk_identity" alert message
+ will be sent and the connection setup fails.
+ 
++=back
++
+ =cut
+diff --git a/doc/ssl/SSL_accept.pod b/doc/ssl/SSL_accept.pod
+index cc724c0..b1c34d1 100644
+--- a/doc/ssl/SSL_accept.pod
++++ b/doc/ssl/SSL_accept.pod
+@@ -44,17 +44,17 @@ The following return values can occur:
+ 
+ =over 4
+ 
+-=item 1
+-
+-The TLS/SSL handshake was successfully completed, a TLS/SSL connection has been
+-established.
+-
+ =item 0
+ 
+ The TLS/SSL handshake was not successful but was shut down controlled and
+ by the specifications of the TLS/SSL protocol. Call SSL_get_error() with the
+ return value B<ret> to find out the reason.
+ 
++=item 1
++
++The TLS/SSL handshake was successfully completed, a TLS/SSL connection has been
++established.
++
+ =item E<lt>0
+ 
+ The TLS/SSL handshake was not successful because a fatal error occurred either
+diff --git a/doc/ssl/SSL_connect.pod b/doc/ssl/SSL_connect.pod
+index cc56ebb..946ca89 100644
+--- a/doc/ssl/SSL_connect.pod
++++ b/doc/ssl/SSL_connect.pod
+@@ -41,17 +41,17 @@ The following return values can occur:
+ 
+ =over 4
+ 
+-=item 1
+-
+-The TLS/SSL handshake was successfully completed, a TLS/SSL connection has been
+-established.
+-
+ =item 0
+ 
+ The TLS/SSL handshake was not successful but was shut down controlled and
+ by the specifications of the TLS/SSL protocol. Call SSL_get_error() with the
+ return value B<ret> to find out the reason.
+ 
++=item 1
++
++The TLS/SSL handshake was successfully completed, a TLS/SSL connection has been
++established.
++
+ =item E<lt>0
+ 
+ The TLS/SSL handshake was not successful, because a fatal error occurred either
+diff --git a/doc/ssl/SSL_do_handshake.pod b/doc/ssl/SSL_do_handshake.pod
+index 2435764..7f8cf24 100644
+--- a/doc/ssl/SSL_do_handshake.pod
++++ b/doc/ssl/SSL_do_handshake.pod
+@@ -45,17 +45,17 @@ The following return values can occur:
+ 
+ =over 4
+ 
+-=item 1
+-
+-The TLS/SSL handshake was successfully completed, a TLS/SSL connection has been
+-established.
+-
+ =item 0
+ 
+ The TLS/SSL handshake was not successful but was shut down controlled and
+ by the specifications of the TLS/SSL protocol. Call SSL_get_error() with the
+ return value B<ret> to find out the reason.
+ 
++=item 1
++
++The TLS/SSL handshake was successfully completed, a TLS/SSL connection has been
++established.
++
+ =item E<lt>0
+ 
+ The TLS/SSL handshake was not successful because a fatal error occurred either
+diff --git a/doc/ssl/SSL_shutdown.pod b/doc/ssl/SSL_shutdown.pod
+index 89911ac..42a89b7 100644
+--- a/doc/ssl/SSL_shutdown.pod
++++ b/doc/ssl/SSL_shutdown.pod
+@@ -92,11 +92,6 @@ The following return values can occur:
+ 
+ =over 4
+ 
+-=item 1
+-
+-The shutdown was successfully completed. The "close notify" alert was sent
+-and the peer's "close notify" alert was received.
+-
+ =item 0
+ 
+ The shutdown is not yet finished. Call SSL_shutdown() for a second time,
+@@ -104,6 +99,11 @@ if a bidirectional shutdown shall be performed.
+ The output of L<SSL_get_error(3)|SSL_get_error(3)> may be misleading, as an
+ erroneous SSL_ERROR_SYSCALL may be flagged even though no error occurred.
+ 
++=item 1
++
++The shutdown was successfully completed. The "close notify" alert was sent
++and the peer's "close notify" alert was received.
++
+ =item -1
+ 
+ The shutdown was not successful because a fatal error occurred either
+diff --git a/ssl/d1_pkt.c b/ssl/d1_pkt.c
+index 3c81786..9b013e4 100644
+--- a/ssl/d1_pkt.c
++++ b/ssl/d1_pkt.c
+@@ -371,7 +371,7 @@ dtls1_process_record(SSL *s)
+ 	int enc_err;
+ 	SSL_SESSION *sess;
+ 	SSL3_RECORD *rr;
+-	unsigned int mac_size;
++	unsigned int mac_size, orig_len;
+ 	unsigned char md[EVP_MAX_MD_SIZE];
+ 
+ 	rr= &(s->s3->rrec);
+@@ -402,7 +402,6 @@ dtls1_process_record(SSL *s)
+ 
+ 	/* decrypt in place in 'rr->input' */
+ 	rr->data=rr->input;
+-	rr->orig_len=rr->length;
+ 
+ 	enc_err = s->method->ssl3_enc->enc(s,0);
+ 	/* enc_err is:
+@@ -434,15 +433,18 @@ printf("\n");
+ 		mac_size=EVP_MD_CTX_size(s->read_hash);
+ 		OPENSSL_assert(mac_size <= EVP_MAX_MD_SIZE);
+ 
++		/* kludge: *_cbc_remove_padding passes padding length in rr->type */
++		orig_len = rr->length+((unsigned int)rr->type>>8);
++
+ 		/* orig_len is the length of the record before any padding was
+ 		 * removed. This is public information, as is the MAC in use,
+ 		 * therefore we can safely process the record in a different
+ 		 * amount of time if it's too short to possibly contain a MAC.
+ 		 */
+-		if (rr->orig_len < mac_size ||
++		if (orig_len < mac_size ||
+ 		    /* CBC records must have a padding length byte too. */
+ 		    (EVP_CIPHER_CTX_mode(s->enc_read_ctx) == EVP_CIPH_CBC_MODE &&
+-		     rr->orig_len < mac_size+1))
++		     orig_len < mac_size+1))
+ 			{
+ 			al=SSL_AD_DECODE_ERROR;
+ 			SSLerr(SSL_F_DTLS1_PROCESS_RECORD,SSL_R_LENGTH_TOO_SHORT);
+@@ -457,12 +459,12 @@ printf("\n");
+ 			 * without leaking the contents of the padding bytes.
+ 			 * */
+ 			mac = mac_tmp;
+-			ssl3_cbc_copy_mac(mac_tmp, rr, mac_size);
++			ssl3_cbc_copy_mac(mac_tmp, rr, mac_size, orig_len);
+ 			rr->length -= mac_size;
+ 			}
+ 		else
+ 			{
+-			/* In this case there's no padding, so |rec->orig_len|
++			/* In this case there's no padding, so |orig_len|
+ 			 * equals |rec->length| and we checked that there's
+ 			 * enough bytes for |mac_size| above. */
+ 			rr->length -= mac_size;
+diff --git a/ssl/s3_cbc.c b/ssl/s3_cbc.c
+index dc3fd3e..61413b8 100644
+--- a/ssl/s3_cbc.c
++++ b/ssl/s3_cbc.c
+@@ -76,6 +76,13 @@
+ #define DUPLICATE_MSB_TO_ALL(x) ( (unsigned)( (int)(x) >> (sizeof(int)*8-1) ) )
+ #define DUPLICATE_MSB_TO_ALL_8(x) ((unsigned char)(DUPLICATE_MSB_TO_ALL(x)))
+ 
++/* constant_time_lt returns 0xff if a<b and 0x00 otherwise. */
++static unsigned constant_time_lt(unsigned a, unsigned b)
++	{
++	a -= b;
++	return DUPLICATE_MSB_TO_ALL(a);
++	}
++
+ /* constant_time_ge returns 0xff if a>=b and 0x00 otherwise. */
+ static unsigned constant_time_ge(unsigned a, unsigned b)
+ 	{
+@@ -84,7 +91,7 @@ static unsigned constant_time_ge(unsigned a, unsigned b)
+ 	}
+ 
+ /* constant_time_eq_8 returns 0xff if a==b and 0x00 otherwise. */
+-static unsigned char constant_time_eq_8(unsigned char a, unsigned char b)
++static unsigned char constant_time_eq_8(unsigned a, unsigned b)
+ 	{
+ 	unsigned c = a ^ b;
+ 	c--;
+@@ -116,7 +123,9 @@ int ssl3_cbc_remove_padding(const SSL* s,
+ 	good = constant_time_ge(rec->length, padding_length+overhead);
+ 	/* SSLv3 requires that the padding is minimal. */
+ 	good &= constant_time_ge(block_size, padding_length+1);
+-	rec->length -= good & (padding_length+1);
++	padding_length = good & (padding_length+1);
++	rec->length -= padding_length;
++	rec->type |= padding_length<<8;	/* kludge: pass padding length */
+ 	return (int)((good & 1) | (~good & -1));
+ }
+ 
+@@ -137,14 +146,21 @@ int tls1_cbc_remove_padding(const SSL* s,
+ 			    unsigned mac_size)
+ 	{
+ 	unsigned padding_length, good, to_check, i;
+-	const char has_explicit_iv = s->version == DTLS1_VERSION;
+-	const unsigned overhead = 1 /* padding length byte */ +
+-				  mac_size +
+-				  (has_explicit_iv ? block_size : 0);
+-
+-	/* These lengths are all public so we can test them in non-constant
+-	 * time. */
+-	if (overhead > rec->length)
++	const unsigned overhead = 1 /* padding length byte */ + mac_size;
++	/* Check if version requires explicit IV */
++	if (s->version == DTLS1_VERSION || s->version == DTLS1_BAD_VER)
++		{
++		/* These lengths are all public so we can test them in
++		 * non-constant time.
++		 */
++		if (overhead + block_size > rec->length)
++			return 0;
++		/* We can now safely skip explicit IV */
++		rec->data += block_size;
++		rec->input += block_size;
++		rec->length -= block_size;
++		}
++	else if (overhead > rec->length)
+ 		return 0;
+ 
+ 	padding_length = rec->data[rec->length-1];
+@@ -202,31 +218,13 @@ int tls1_cbc_remove_padding(const SSL* s,
+ 	good <<= sizeof(good)*8-1;
+ 	good = DUPLICATE_MSB_TO_ALL(good);
+ 
+-	rec->length -= good & (padding_length+1);
+-
+-	/* We can always safely skip the explicit IV. We check at the beginning
+-	 * of this function that the record has at least enough space for the
+-	 * IV, MAC and padding length byte. (These can be checked in
+-	 * non-constant time because it's all public information.) So, if the
+-	 * padding was invalid, then we didn't change |rec->length| and this is
+-	 * safe. If the padding was valid then we know that we have at least
+-	 * overhead+padding_length bytes of space and so this is still safe
+-	 * because overhead accounts for the explicit IV. */
+-	if (has_explicit_iv)
+-		{
+-		rec->data += block_size;
+-		rec->input += block_size;
+-		rec->length -= block_size;
+-		rec->orig_len -= block_size;
+-		}
++	padding_length = good & (padding_length+1);
++	rec->length -= padding_length;
++	rec->type |= padding_length<<8;	/* kludge: pass padding length */
+ 
+ 	return (int)((good & 1) | (~good & -1));
+ 	}
+ 
+-#if defined(_M_AMD64) || defined(__x86_64__)
+-#define CBC_MAC_ROTATE_IN_PLACE
+-#endif
+-
+ /* ssl3_cbc_copy_mac copies |md_size| bytes from the end of |rec| to |out| in
+  * constant time (independent of the concrete value of rec->length, which may
+  * vary within a 256-byte window).
+@@ -240,15 +238,18 @@ int tls1_cbc_remove_padding(const SSL* s,
+  *
+  * If CBC_MAC_ROTATE_IN_PLACE is defined then the rotation is performed with
+  * variable accesses in a 64-byte-aligned buffer. Assuming that this fits into
+- * a single cache-line, then the variable memory accesses don't actually affect
+- * the timing. This has been tested to be true on Intel amd64 chips.
++ * a single or pair of cache-lines, then the variable memory accesses don't
++ * actually affect the timing. CPUs with smaller cache-lines [if any] are
++ * not multi-core and are not considered vulnerable to cache-timing attacks.
+  */
++#define CBC_MAC_ROTATE_IN_PLACE
++
+ void ssl3_cbc_copy_mac(unsigned char* out,
+ 		       const SSL3_RECORD *rec,
+-		       unsigned md_size)
++		       unsigned md_size,unsigned orig_len)
+ 	{
+ #if defined(CBC_MAC_ROTATE_IN_PLACE)
+-	unsigned char rotated_mac_buf[EVP_MAX_MD_SIZE*2];
++	unsigned char rotated_mac_buf[64+EVP_MAX_MD_SIZE];
+ 	unsigned char *rotated_mac;
+ #else
+ 	unsigned char rotated_mac[EVP_MAX_MD_SIZE];
+@@ -264,16 +265,16 @@ void ssl3_cbc_copy_mac(unsigned char* out,
+ 	unsigned div_spoiler;
+ 	unsigned rotate_offset;
+ 
+-	OPENSSL_assert(rec->orig_len >= md_size);
++	OPENSSL_assert(orig_len >= md_size);
+ 	OPENSSL_assert(md_size <= EVP_MAX_MD_SIZE);
+ 
+ #if defined(CBC_MAC_ROTATE_IN_PLACE)
+-	rotated_mac = (unsigned char*) (((intptr_t)(rotated_mac_buf + 64)) & ~63);
++	rotated_mac = rotated_mac_buf + ((0-(size_t)rotated_mac_buf)&63);
+ #endif
+ 
+ 	/* This information is public so it's safe to branch based on it. */
+-	if (rec->orig_len > md_size + 255 + 1)
+-		scan_start = rec->orig_len - (md_size + 255 + 1);
++	if (orig_len > md_size + 255 + 1)
++		scan_start = orig_len - (md_size + 255 + 1);
+ 	/* div_spoiler contains a multiple of md_size that is used to cause the
+ 	 * modulo operation to be constant time. Without this, the time varies
+ 	 * based on the amount of padding when running on Intel chips at least.
+@@ -286,16 +287,13 @@ void ssl3_cbc_copy_mac(unsigned char* out,
+ 	rotate_offset = (div_spoiler + mac_start - scan_start) % md_size;
+ 
+ 	memset(rotated_mac, 0, md_size);
+-	for (i = scan_start; i < rec->orig_len;)
++	for (i = scan_start, j = 0; i < orig_len; i++)
+ 		{
+-		for (j = 0; j < md_size && i < rec->orig_len; i++, j++)
+-			{
+-			unsigned char mac_started = constant_time_ge(i, mac_start);
+-			unsigned char mac_ended = constant_time_ge(i, mac_end);
+-			unsigned char b = 0;
+-			b = rec->data[i];
+-			rotated_mac[j] |= b & mac_started & ~mac_ended;
+-			}
++		unsigned char mac_started = constant_time_ge(i, mac_start);
++		unsigned char mac_ended = constant_time_ge(i, mac_end);
++		unsigned char b = rec->data[i];
++		rotated_mac[j++] |= b & mac_started & ~mac_ended;
++		j &= constant_time_lt(j,md_size);
+ 		}
+ 
+ 	/* Now rotate the MAC */
+@@ -303,30 +301,43 @@ void ssl3_cbc_copy_mac(unsigned char* out,
+ 	j = 0;
+ 	for (i = 0; i < md_size; i++)
+ 		{
+-		unsigned char offset = (div_spoiler + rotate_offset + i) % md_size;
+-		out[j++] = rotated_mac[offset];
++		/* in case cache-line is 32 bytes, touch second line */
++		((volatile unsigned char *)rotated_mac)[rotate_offset^32];
++		out[j++] = rotated_mac[rotate_offset++];
++		rotate_offset &= constant_time_lt(rotate_offset,md_size);
+ 		}
+ #else
+ 	memset(out, 0, md_size);
++	rotate_offset = md_size - rotate_offset;
++	rotate_offset &= constant_time_lt(rotate_offset,md_size);
+ 	for (i = 0; i < md_size; i++)
+ 		{
+-		unsigned char offset = (div_spoiler + md_size - rotate_offset + i) % md_size;
+ 		for (j = 0; j < md_size; j++)
+-			out[j] |= rotated_mac[i] & constant_time_eq_8(j, offset);
++			out[j] |= rotated_mac[i] & constant_time_eq_8(j, rotate_offset);
++		rotate_offset++;
++		rotate_offset &= constant_time_lt(rotate_offset,md_size);
+ 		}
+ #endif
+ 	}
+ 
++/* u32toLE serialises an unsigned, 32-bit number (n) as four bytes at (p) in
++ * little-endian order. The value of p is advanced by four. */
++#define u32toLE(n, p) \
++	(*((p)++)=(unsigned char)(n), \
++	 *((p)++)=(unsigned char)(n>>8), \
++	 *((p)++)=(unsigned char)(n>>16), \
++	 *((p)++)=(unsigned char)(n>>24))
++
+ /* These functions serialize the state of a hash and thus perform the standard
+  * "final" operation without adding the padding and length that such a function
+  * typically does. */
+ static void tls1_md5_final_raw(void* ctx, unsigned char *md_out)
+ 	{
+ 	MD5_CTX *md5 = ctx;
+-	l2n(md5->A, md_out);
+-	l2n(md5->B, md_out);
+-	l2n(md5->C, md_out);
+-	l2n(md5->D, md_out);
++	u32toLE(md5->A, md_out);
++	u32toLE(md5->B, md_out);
++	u32toLE(md5->C, md_out);
++	u32toLE(md5->D, md_out);
+ 	}
+ 
+ static void tls1_sha1_final_raw(void* ctx, unsigned char *md_out)
+@@ -442,6 +453,7 @@ void ssl3_cbc_digest_record(
+ 	/* mdLengthSize is the number of bytes in the length field that terminates
+ 	* the hash. */
+ 	unsigned md_length_size = 8;
++	char length_is_big_endian = 1;
+ 
+ 	/* This is a, hopefully redundant, check that allows us to forget about
+ 	 * many possible overflows later in this function. */
+@@ -455,6 +467,7 @@ void ssl3_cbc_digest_record(
+ 			md_transform = (void(*)(void *ctx, const unsigned char *block)) MD5_Transform;
+ 			md_size = 16;
+ 			sslv3_pad_length = 48;
++			length_is_big_endian = 0;
+ 			break;
+ 		case NID_sha1:
+ 			SHA1_Init((SHA_CTX*)md_state.c);
+@@ -595,11 +608,22 @@ void ssl3_cbc_digest_record(
+ 		md_transform(md_state.c, hmac_pad);
+ 		}
+ 
+-	memset(length_bytes,0,md_length_size-4);
+-	length_bytes[md_length_size-4] = (unsigned char)(bits>>24);
+-	length_bytes[md_length_size-3] = (unsigned char)(bits>>16);
+-	length_bytes[md_length_size-2] = (unsigned char)(bits>>8);
+-	length_bytes[md_length_size-1] = (unsigned char)bits;
++	if (length_is_big_endian)
++		{
++		memset(length_bytes,0,md_length_size-4);
++		length_bytes[md_length_size-4] = (unsigned char)(bits>>24);
++		length_bytes[md_length_size-3] = (unsigned char)(bits>>16);
++		length_bytes[md_length_size-2] = (unsigned char)(bits>>8);
++		length_bytes[md_length_size-1] = (unsigned char)bits;
++		}
++	else
++		{
++		memset(length_bytes,0,md_length_size);
++		length_bytes[md_length_size-5] = (unsigned char)(bits>>24);
++		length_bytes[md_length_size-6] = (unsigned char)(bits>>16);
++		length_bytes[md_length_size-7] = (unsigned char)(bits>>8);
++		length_bytes[md_length_size-8] = (unsigned char)bits;
++		}
+ 
+ 	if (k > 0)
+ 		{
+diff --git a/ssl/s3_clnt.c b/ssl/s3_clnt.c
+index fc53161..f1f9c21 100644
+--- a/ssl/s3_clnt.c
++++ b/ssl/s3_clnt.c
+@@ -888,7 +888,10 @@ int ssl3_get_server_hello(SSL *s)
+ 		}
+ 	s->s3->tmp.new_cipher=c;
+ 	if (!ssl3_digest_cached_records(s))
++		{
++		al = SSL_AD_INTERNAL_ERROR;
+ 		goto f_err;
++		}
+ 
+ 	/* lets get the compression algorithm */
+ 	/* COMPRESSION */
+@@ -968,7 +971,9 @@ int ssl3_get_server_hello(SSL *s)
+ 	return(1);
+ f_err:
+ 	ssl3_send_alert(s,SSL3_AL_FATAL,al);
++#ifndef OPENSSL_NO_TLSEXT
+ err:
++#endif
+ 	return(-1);
+ 	}
+ 
+diff --git a/ssl/s3_enc.c b/ssl/s3_enc.c
+index 76d87b5..6bc0812 100644
+--- a/ssl/s3_enc.c
++++ b/ssl/s3_enc.c
+@@ -697,7 +697,7 @@ int n_ssl3_mac(SSL *ssl, unsigned char *md, int send)
+ 	EVP_MD_CTX md_ctx;
+ 	const EVP_MD_CTX *hash;
+ 	unsigned char *p,rec_char;
+-	size_t md_size;
++	size_t md_size, orig_len;
+ 	int npad;
+ 	int t;
+ 
+@@ -722,6 +722,10 @@ int n_ssl3_mac(SSL *ssl, unsigned char *md, int send)
+ 	md_size=t;
+ 	npad=(48/md_size)*md_size;
+ 
++	/* kludge: ssl3_cbc_remove_padding passes padding length in rec->type */
++	orig_len = rec->length+md_size+((unsigned int)rec->type>>8);
++	rec->type &= 0xff;
++
+ 	if (!send &&
+ 	    EVP_CIPHER_CTX_mode(ssl->enc_read_ctx) == EVP_CIPH_CBC_MODE &&
+ 	    ssl3_cbc_record_digest_supported(hash))
+@@ -753,7 +757,7 @@ int n_ssl3_mac(SSL *ssl, unsigned char *md, int send)
+ 			hash,
+ 			md, &md_size,
+ 			header, rec->input,
+-			rec->length + md_size, rec->orig_len,
++			rec->length + md_size, orig_len,
+ 			mac_sec, md_size,
+ 			1 /* is SSLv3 */);
+ 		}
+diff --git a/ssl/s3_pkt.c b/ssl/s3_pkt.c
+index 7d8fc53..a41279e 100644
+--- a/ssl/s3_pkt.c
++++ b/ssl/s3_pkt.c
+@@ -289,7 +289,7 @@ static int ssl3_get_record(SSL *s)
+ 	unsigned char *p;
+ 	unsigned char md[EVP_MAX_MD_SIZE];
+ 	short version;
+-	unsigned mac_size;
++	unsigned mac_size, orig_len;
+ 	size_t extra;
+ 
+ 	rr= &(s->s3->rrec);
+@@ -397,7 +397,6 @@ fprintf(stderr, "Record type=%d, Length=%d\n", rr->type, rr->length);
+ 
+ 	/* decrypt in place in 'rr->input' */
+ 	rr->data=rr->input;
+-	rr->orig_len=rr->length;
+ 
+ 	enc_err = s->method->ssl3_enc->enc(s,0);
+ 	/* enc_err is:
+@@ -428,15 +427,18 @@ printf("\n");
+ 		mac_size=EVP_MD_CTX_size(s->read_hash);
+ 		OPENSSL_assert(mac_size <= EVP_MAX_MD_SIZE);
+ 
++		/* kludge: *_cbc_remove_padding passes padding length in rr->type */
++		orig_len = rr->length+((unsigned int)rr->type>>8);
++
+ 		/* orig_len is the length of the record before any padding was
+ 		 * removed. This is public information, as is the MAC in use,
+ 		 * therefore we can safely process the record in a different
+ 		 * amount of time if it's too short to possibly contain a MAC.
+ 		 */
+-		if (rr->orig_len < mac_size ||
++		if (orig_len < mac_size ||
+ 		    /* CBC records must have a padding length byte too. */
+ 		    (EVP_CIPHER_CTX_mode(s->enc_read_ctx) == EVP_CIPH_CBC_MODE &&
+-		     rr->orig_len < mac_size+1))
++		     orig_len < mac_size+1))
+ 			{
+ 			al=SSL_AD_DECODE_ERROR;
+ 			SSLerr(SSL_F_SSL3_GET_RECORD,SSL_R_LENGTH_TOO_SHORT);
+@@ -451,12 +453,12 @@ printf("\n");
+ 			 * without leaking the contents of the padding bytes.
+ 			 * */
+ 			mac = mac_tmp;
+-			ssl3_cbc_copy_mac(mac_tmp, rr, mac_size);
++			ssl3_cbc_copy_mac(mac_tmp, rr, mac_size, orig_len);
+ 			rr->length -= mac_size;
+ 			}
+ 		else
+ 			{
+-			/* In this case there's no padding, so |rec->orig_len|
++			/* In this case there's no padding, so |orig_len|
+ 			 * equals |rec->length| and we checked that there's
+ 			 * enough bytes for |mac_size| above. */
+ 			rr->length -= mac_size;
+diff --git a/ssl/s3_srvr.c b/ssl/s3_srvr.c
+index b4a6a37..14aa451 100644
+--- a/ssl/s3_srvr.c
++++ b/ssl/s3_srvr.c
+@@ -1269,7 +1269,10 @@ int ssl3_get_client_hello(SSL *s)
+ 		}
+ 
+ 	if (!ssl3_digest_cached_records(s))
++		{
++		al = SSL_AD_INTERNAL_ERROR;
+ 		goto f_err;
++		}
+ 	
+ 	/* we now have the following setup. 
+ 	 * client_random
+@@ -1282,6 +1285,7 @@ int ssl3_get_client_hello(SSL *s)
+ 	 * s->tmp.new_cipher	- the new cipher to use.
+ 	 */
+ 
++#ifndef OPENSSL_NO_TLSEXT
+ 	/* Handles TLS extensions that we couldn't check earlier */
+ 	if (s->version >= SSL3_VERSION)
+ 		{
+@@ -1291,6 +1295,7 @@ int ssl3_get_client_hello(SSL *s)
+ 			goto err;
+ 			}
+ 		}
++#endif
+ 
+ 	if (ret < 0) ret=1;
+ 	if (0)
+diff --git a/ssl/ssl3.h b/ssl/ssl3.h
+index d3bd768..9c2c412 100644
+--- a/ssl/ssl3.h
++++ b/ssl/ssl3.h
+@@ -349,10 +349,6 @@ typedef struct ssl3_record_st
+ /*r */	unsigned char *comp;    /* only used with decompression - malloc()ed */
+ /*r */  unsigned long epoch;    /* epoch number, needed by DTLS1 */
+ /*r */  unsigned char seq_num[8]; /* sequence number, needed by DTLS1 */
+-/*rw*/	unsigned int orig_len;  /* How many bytes were available before padding
+-				   was removed? This is used to implement the
+-				   MAC check in constant time for CBC records.
+-				 */
+ 	} SSL3_RECORD;
+ 
+ typedef struct ssl3_buffer_st
+diff --git a/ssl/ssl_lib.c b/ssl/ssl_lib.c
+index 25573e4..b3c21ea 100644
+--- a/ssl/ssl_lib.c
++++ b/ssl/ssl_lib.c
+@@ -2601,9 +2601,7 @@ void ssl_clear_cipher_ctx(SSL *s)
+ /* Fix this function so that it takes an optional type parameter */
+ X509 *SSL_get_certificate(const SSL *s)
+ 	{
+-	if (s->server)
+-		return(ssl_get_server_send_cert(s));
+-	else if (s->cert != NULL)
++	if (s->cert != NULL)
+ 		return(s->cert->key->x509);
+ 	else
+ 		return(NULL);
+diff --git a/ssl/ssl_locl.h b/ssl/ssl_locl.h
+index 6a4f62a..b0dab18 100644
+--- a/ssl/ssl_locl.h
++++ b/ssl/ssl_locl.h
+@@ -1091,7 +1091,7 @@ int ssl_parse_clienthello_renegotiate_ext(SSL *s, unsigned char *d, int len,
+ /* s3_cbc.c */
+ void ssl3_cbc_copy_mac(unsigned char* out,
+ 		       const SSL3_RECORD *rec,
+-		       unsigned md_size);
++		       unsigned md_size,unsigned orig_len);
+ int ssl3_cbc_remove_padding(const SSL* s,
+ 			    SSL3_RECORD *rec,
+ 			    unsigned block_size,
+diff --git a/ssl/ssltest.c b/ssl/ssltest.c
+index 0bb4fa4..eaad524 100644
+--- a/ssl/ssltest.c
++++ b/ssl/ssltest.c
+@@ -782,7 +782,13 @@ bad:
+ 		meth=SSLv23_method();
+ #else
+ #ifdef OPENSSL_NO_SSL2
+-	meth=SSLv3_method();
++	if (tls1)
++		meth=TLSv1_method();
++	else
++	if (ssl3)
++		meth=SSLv3_method();
++	else
++		meth=SSLv23_method();
+ #else
+ 	meth=SSLv2_method();
+ #endif
+diff --git a/ssl/t1_enc.c b/ssl/t1_enc.c
+index c38dae6..d67f6f1 100644
+--- a/ssl/t1_enc.c
++++ b/ssl/t1_enc.c
+@@ -851,7 +851,7 @@ int tls1_mac(SSL *ssl, unsigned char *md, int send)
+ 	SSL3_RECORD *rec;
+ 	unsigned char *seq;
+ 	EVP_MD_CTX *hash;
+-	size_t md_size;
++	size_t md_size, orig_len;
+ 	int i;
+ 	EVP_MD_CTX hmac, *mac_ctx;
+ 	unsigned char header[13];
+@@ -898,6 +898,10 @@ int tls1_mac(SSL *ssl, unsigned char *md, int send)
+ 	else
+ 		memcpy(header, seq, 8);
+ 
++	/* kludge: tls1_cbc_remove_padding passes padding length in rec->type */
++	orig_len = rec->length+md_size+((unsigned int)rec->type>>8);
++	rec->type &= 0xff;
++
+ 	header[8]=rec->type;
+ 	header[9]=(unsigned char)(ssl->version>>8);
+ 	header[10]=(unsigned char)(ssl->version);
+@@ -916,7 +920,7 @@ int tls1_mac(SSL *ssl, unsigned char *md, int send)
+ 			mac_ctx,
+ 			md, &md_size,
+ 			header, rec->input,
+-			rec->length + md_size, rec->orig_len,
++			rec->length + md_size, orig_len,
+ 			ssl->s3->read_mac_secret,
+ 			ssl->s3->read_mac_secret_size,
+ 			0 /* not SSLv3 */);
+diff --git a/test/cms-test.pl b/test/cms-test.pl
+index c938bcf..dfef799 100644
+--- a/test/cms-test.pl
++++ b/test/cms-test.pl
+@@ -415,8 +415,10 @@ sub run_smime_tests {
+ }
+ 
+ sub cmp_files {
++    use FileHandle;
+     my ( $f1, $f2 ) = @_;
+-    my ( $fp1, $fp2 );
++    my $fp1 = FileHandle->new();
++    my $fp2 = FileHandle->new();
+ 
+     my ( $rd1, $rd2 );
+ 
+diff --git a/test/testssl b/test/testssl
+index b55364a..04341e9 100644
+--- a/test/testssl
++++ b/test/testssl
+@@ -119,6 +119,23 @@ $ssltest -bio_pair -server_auth -client_auth $CA $extra || exit 1
+ echo test sslv2/sslv3 with both client and server authentication via BIO pair and app verify
+ $ssltest -bio_pair -server_auth -client_auth -app_verify $CA $extra || exit 1
+ 
++echo "Testing ciphersuites"
++for protocol in SSLv3; do
++  echo "Testing ciphersuites for $protocol"
++  for cipher in `../util/shlib_wrap.sh ../apps/openssl ciphers "RSA+$protocol" | tr ':' ' '`; do
++    echo "Testing $cipher"
++    prot=""
++    if [ $protocol == "SSLv3" ] ; then
++      prot="-ssl3"
++    fi
++    $ssltest -cipher $cipher $prot
++    if [ $? -ne 0 ] ; then
++	  echo "Failed $cipher"
++	  exit 1
++    fi
++  done
++done
++
+ #############################################################################
+ 
+ if ../util/shlib_wrap.sh ../apps/openssl no-dh; then
