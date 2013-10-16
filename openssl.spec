@@ -21,12 +21,12 @@
 Summary: Utilities from the general purpose cryptography library with TLS implementation
 Name: openssl
 Version: 1.0.1e
-Release: 4%{?dist}.1
+Release: 28%{?dist}
 Epoch: 1
 # We have to remove certain patented algorithms from the openssl source
 # tarball with the hobble-openssl script which is included below.
 # The original openssl upstream tarball cannot be shipped in the .src.rpm.
-Source: openssl-%{version}-usa.tar.xz
+Source: openssl-%{version}-hobbled.tar.xz
 Source1: hobble-openssl
 Source2: Makefile.certificate
 Source6: make-dummy-cert
@@ -35,6 +35,8 @@ Source8: openssl-thread-test.c
 Source9: opensslconf-new.h
 Source10: opensslconf-new-warning.h
 Source11: README.FIPS
+Source12: ec_curve.c
+Source13: ectest.c
 # Build changes
 Patch1: openssl-1.0.1-beta2-rpmbuild.patch
 Patch2: openssl-1.0.0f-defaults.patch
@@ -59,7 +61,7 @@ Patch45: openssl-1.0.1e-env-zlib.patch
 Patch47: openssl-1.0.0-beta5-readme-warning.patch
 Patch49: openssl-1.0.1a-algo-doc.patch
 Patch50: openssl-1.0.1-beta2-dtls1-abi.patch
-Patch51: openssl-1.0.1-version.patch
+Patch51: openssl-1.0.1e-version.patch
 Patch56: openssl-1.0.0c-rsa-x931.patch
 Patch58: openssl-1.0.1-beta2-fips-md5-allow.patch
 Patch60: openssl-1.0.0d-apps-dgst.patch
@@ -68,11 +70,16 @@ Patch65: openssl-1.0.0e-chil-fixes.patch
 Patch66: openssl-1.0.1-pkgconfig-krb5.patch
 Patch68: openssl-1.0.1e-secure-getenv.patch
 Patch69: openssl-1.0.1c-dh-1024.patch
+Patch70: openssl-1.0.1e-fips-ec.patch
+Patch71: openssl-1.0.1e-manfix.patch
+Patch72: openssl-1.0.1e-fips-ctor.patch
+Patch73: openssl-1.0.1e-speed-suiteb.patch
 # Backported fixes including security fixes
 Patch81: openssl-1.0.1-beta2-padlock64.patch
 Patch82: openssl-1.0.1e-backports.patch
 Patch83: openssl-1.0.1e-bad-mac.patch
-Patch84: openssl-1.0.1e-fips-ec.patch
+Patch84: openssl-1.0.1e-trusted-first.patch
+Patch85: openssl-1.0.1e-arm-use-elf-auxv-caps.patch
 
 License: OpenSSL
 Group: System Environment/Libraries
@@ -95,6 +102,8 @@ Group: System Environment/Libraries
 Requires: ca-certificates >= 2008-5
 # Needed obsoletes due to the base/lib subpackage split
 Obsoletes: openssl < 1:1.0.1-0.3.beta3
+Obsoletes: openssl-fips < 1:1.0.1e-28
+Provides: openssl-fips = %{epoch}:%{version}-%{release}
 
 %description libs
 OpenSSL is a toolkit for supporting cryptography. The openssl-libs
@@ -141,6 +150,9 @@ from other formats to the formats used by the OpenSSL toolkit.
 # The hobble_openssl is called here redundantly, just to be sure.
 # The tarball has already the sources removed.
 %{SOURCE1} > /dev/null
+
+cp %{SOURCE12} %{SOURCE13} crypto/ec/
+
 %patch1 -p1 -b .rpmbuild
 %patch2 -p1 -b .defaults
 %patch4 -p1 -b .enginesdir %{?_rawbuild}
@@ -173,11 +185,16 @@ from other formats to the formats used by the OpenSSL toolkit.
 %patch66 -p1 -b .krb5
 %patch68 -p1 -b .secure-getenv
 %patch69 -p1 -b .dh1024
+%patch70 -p1 -b .fips-ec
+%patch72 -p1 -b .fips-ctor
+%patch73 -p1 -b .suiteb
 
 %patch81 -p1 -b .padlock64
 %patch82 -p1 -b .backports
+%patch71 -p1 -b .manfix
 %patch83 -p1 -b .bad-mac
-%patch84 -p1 -b .fips-ec
+%patch84 -p1 -b .trusted-first
+%patch85 -p1 -b .armcap
 
 sed -i 's/SHLIB_VERSION_NUMBER "1.0.0"/SHLIB_VERSION_NUMBER "%{version}"/' crypto/opensslv.h
 
@@ -215,7 +232,10 @@ sslarch="linux-generic32 -DB_ENDIAN"
 %ifarch s390x
 sslarch="linux64-s390x"
 %endif
-%ifarch %{arm} sh3 sh4
+%ifarch %{arm}
+sslarch=linux-armv4
+%endif
+%ifarch sh3 sh4
 sslarch=linux-generic32
 %endif
 %ifarch %{power64}
@@ -227,9 +247,9 @@ sslarch=linux-ppc64
 # usable on all platforms.  The Configure script already knows to use -fPIC and
 # RPM_OPT_FLAGS, so we can skip specifiying them here.
 ./Configure \
-	--prefix=/usr --openssldir=%{_sysconfdir}/pki/tls ${sslflags} \
+	--prefix=%{_prefix} --openssldir=%{_sysconfdir}/pki/tls ${sslflags} \
 	zlib enable-camellia enable-seed enable-tlsext enable-rfc3779 \
-	enable-cms enable-md2 no-mdc2 no-rc5 no-srp \
+	enable-cms enable-md2 no-mdc2 no-rc5 no-ec2m no-gost no-srp \
 	--with-krb5-flavor=MIT --enginesdir=%{_libdir}/openssl/engines \
 	--with-krb5-dir=/usr shared  ${sslarch} %{?!nofips:fips}
 
@@ -313,6 +333,7 @@ done
 
 # Rename man pages so that they don't conflict with other system man pages.
 pushd $RPM_BUILD_ROOT%{_mandir}
+ln -s -f config.5 man5/openssl.cnf.5
 for manpage in man*/* ; do
 	if [ -L ${manpage} ]; then
 		TARGET=`ls -l ${manpage} | awk '{ print $NF }'`
@@ -435,8 +456,86 @@ rm -rf $RPM_BUILD_ROOT/%{_libdir}/fipscanister.*
 %postun libs -p /sbin/ldconfig
 
 %changelog
-* Tue Oct 15 2013 Tom Callaway <spot@fedoraproject.org> 1.0.1e-4.1
+* Wed Oct 16 2013 Tomáš Mráz <tmraz@redhat.com> 1.0.1e-28
+- only ECC NIST Suite B curves support
+- drop -fips subpackage
+
+* Mon Oct 14 2013 Tom Callaway <spot@fedoraproject.org> - 1.0.1e-27
 - resolve bugzilla 319901 (phew! only took 6 years & 9 days)
+
+* Fri Sep 27 2013 Tomáš Mráz <tmraz@redhat.com> 1.0.1e-26
+- make DTLS1 work in FIPS mode
+- avoid RSA and DSA 512 bits and Whirlpool in 'openssl speed' in FIPS mode
+
+* Mon Sep 23 2013 Tomáš Mráz <tmraz@redhat.com> 1.0.1e-25
+- avoid dlopening libssl.so from libcrypto (#1010357)
+
+* Fri Sep 20 2013 Tomáš Mráz <tmraz@redhat.com> 1.0.1e-24
+- fix small memory leak in FIPS aes selftest
+
+* Thu Sep 19 2013 Tomáš Mráz <tmraz@redhat.com> 1.0.1e-23
+- fix segfault in openssl speed hmac in the FIPS mode
+
+* Thu Sep 12 2013 Tomáš Mráz <tmraz@redhat.com> 1.0.1e-22
+- document the nextprotoneg option in manual pages
+  original patch by Hubert Kario
+
+* Tue Sep 10 2013 Kyle McMartin <kyle@redhat.com> 1.0.1e-21
+- [arm] use elf auxv to figure out armcap.c instead of playing silly
+  games with SIGILL handlers. (#1006474)
+
+* Wed Sep  4 2013 Tomas Mraz <tmraz@redhat.com> 1.0.1e-20
+- try to avoid some races when updating the -fips subpackage
+
+* Mon Sep  2 2013 Tomas Mraz <tmraz@redhat.com> 1.0.1e-19
+- use version-release in .hmac suffix to avoid overwrite
+  during upgrade
+
+* Thu Aug 29 2013 Tomas Mraz <tmraz@redhat.com> 1.0.1e-18
+- allow deinitialization of the FIPS mode
+
+* Thu Aug 29 2013 Tomas Mraz <tmraz@redhat.com> 1.0.1e-17
+- always perform the FIPS selftests in library constructor
+  if FIPS module is installed
+
+* Tue Aug 27 2013 Tomas Mraz <tmraz@redhat.com> 1.0.1e-16
+- add -fips subpackage that contains the FIPS module files
+
+* Fri Aug 16 2013 Tomas Mraz <tmraz@redhat.com> 1.0.1e-15
+- fix use of rdrand if available
+- more commits cherry picked from upstream
+- documentation fixes
+
+* Sat Aug 03 2013 Petr Pisar <ppisar@redhat.com> - 1:1.0.1e-14
+- Perl 5.18 rebuild
+
+* Fri Jul 26 2013 Tomas Mraz <tmraz@redhat.com> 1.0.1e-13
+- additional manual page fix
+- use symbol versioning also for the textual version
+
+* Thu Jul 25 2013 Tomas Mraz <tmraz@redhat.com> 1.0.1e-12
+- additional manual page fixes
+
+* Fri Jul 19 2013 Tomas Mraz <tmraz@redhat.com> 1.0.1e-11
+- use _prefix macro
+
+* Wed Jul 17 2013 Petr Pisar <ppisar@redhat.com> - 1:1.0.1e-10
+- Perl 5.18 rebuild
+
+* Thu Jul 11 2013 Tomas Mraz <tmraz@redhat.com> 1.0.1e-9
+- add openssl.cnf.5 manpage symlink to config.5
+
+* Wed Jul 10 2013 Tomas Mraz <tmraz@redhat.com> 1.0.1e-8
+- add relro linking flag
+
+* Wed Jul 10 2013 Tomas Mraz <tmraz@redhat.com> 1.0.1e-7
+- add support for the -trusted_first option for certificate chain verification
+
+* Fri May  3 2013 Tomas Mraz <tmraz@redhat.com> 1.0.1e-6
+- fix build of manual pages with current pod2man (#959439)
+
+* Sun Apr 21 2013 Peter Robinson <pbrobinson@fedoraproject.org> 1.0.1e-5
+- Enable ARM optimised build
 
 * Mon Mar 18 2013 Tomas Mraz <tmraz@redhat.com> 1.0.1e-4
 - fix random bad record mac errors (#918981)
