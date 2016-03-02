@@ -23,7 +23,7 @@
 Summary: Utilities from the general purpose cryptography library with TLS implementation
 Name: openssl
 Version: 1.0.1k
-Release: 13%{?dist}
+Release: 14%{?dist}
 Epoch: 1
 # We have to remove certain patented algorithms from the openssl source
 # tarball with the hobble-openssl script which is included below.
@@ -106,6 +106,11 @@ Patch112: openssl-1.0.1e-cve-2015-1792.patch
 Patch113: openssl-1.0.1e-cve-2015-3194.patch
 Patch114: openssl-1.0.1e-cve-2015-3195.patch
 Patch115: openssl-1.0.1k-cve-2015-3196.patch
+Patch116: openssl-1.0.1e-cve-2015-3197.patch
+Patch117: openssl-1.0.1k-cve-2016-0702.patch
+Patch118: openssl-1.0.1e-cve-2016-0705.patch
+Patch119: openssl-1.0.1e-cve-2016-0797.patch
+Patch120: openssl-1.0.1k-cve-2016-0799.patch
 
 License: OpenSSL
 Group: System Environment/Libraries
@@ -245,6 +250,11 @@ cp %{SOURCE12} %{SOURCE13} crypto/ec/
 %patch113 -p1 -b .pss-check
 %patch114 -p1 -b .combine-leak
 %patch115 -p1 -b .psk-identity
+%patch116 -p1 -b .ssl2-ciphers
+%patch117 -p1 -b .rsa-const
+%patch118 -p1 -b .dsa-doublefree
+%patch119 -p1 -b .bn-hex
+%patch120 -p1 -b .bio-printf
 
 sed -i 's/SHLIB_VERSION_NUMBER "1.0.0"/SHLIB_VERSION_NUMBER "%{version}"/' crypto/opensslv.h
 
@@ -517,6 +527,14 @@ rm -rf $RPM_BUILD_ROOT/%{_libdir}/fipscanister.*
 %postun libs -p /sbin/ldconfig
 
 %changelog
+* Wed Mar  2 2016 Tomáš Mráz <tmraz@redhat.com> 1.0.1e-14
+- fix CVE-2016-0702 - side channel attack on modular exponentiation
+- fix CVE-2016-0705 - double-free in DSA private key parsing
+- fix CVE-2016-0797 - heap corruption in BN_hex2bn and BN_dec2bn
+- fix CVE-2015-3197 - SSLv2 ciphersuite enforcement
+- fix CVE-2015-7575 - disallow use of MD5 in TLS1.2
+- fix CVE-2016-0799 - memory issues in BIO_*printf functions
+
 * Fri Dec  4 2015 Tomáš Mráz <tmraz@redhat.com> 1.0.1k-13
 - fix CVE-2015-3194 - certificate verify crash with missing PSS parameter
 - fix CVE-2015-3195 - X509_ATTRIBUTE memory leak
