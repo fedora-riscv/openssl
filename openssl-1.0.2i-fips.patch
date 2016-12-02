@@ -4997,7 +4997,7 @@ diff -up openssl-1.0.2i/crypto/fips/fips_drbg_lib.c.fips openssl-1.0.2i/crypto/f
 diff -up openssl-1.0.2i/crypto/fips/fips_drbg_rand.c.fips openssl-1.0.2i/crypto/fips/fips_drbg_rand.c
 --- openssl-1.0.2i/crypto/fips/fips_drbg_rand.c.fips	2016-09-22 13:35:57.015220951 +0200
 +++ openssl-1.0.2i/crypto/fips/fips_drbg_rand.c	2016-09-22 13:35:57.015220951 +0200
-@@ -0,0 +1,166 @@
+@@ -0,0 +1,164 @@
 +/* fips/rand/fips_drbg_rand.c */
 +/* Written by Dr Stephen N Henson (steve@openssl.org) for the OpenSSL
 + * project.
@@ -5121,9 +5121,7 @@ diff -up openssl-1.0.2i/crypto/fips/fips_drbg_rand.c.fips openssl-1.0.2i/crypto/
 +{
 +    DRBG_CTX *dctx = &ossl_dctx;
 +    int rv;
-+    CRYPTO_r_lock(CRYPTO_LOCK_RAND);
 +    rv = dctx->status == DRBG_STATUS_READY ? 1 : 0;
-+    CRYPTO_r_unlock(CRYPTO_LOCK_RAND);
 +    return rv;
 +}
 +

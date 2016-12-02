@@ -23,7 +23,7 @@
 Summary: Utilities from the general purpose cryptography library with TLS implementation
 Name: openssl
 Version: 1.0.2j
-Release: 2%{?dist}
+Release: 3%{?dist}
 Epoch: 1
 # We have to remove certain patented algorithms from the openssl source
 # tarball with the hobble-openssl script which is included below.
@@ -508,6 +508,10 @@ rm -rf $RPM_BUILD_ROOT/%{_libdir}/fipscanister.*
 %postun libs -p /sbin/ldconfig
 
 %changelog
+* Fri Dec  2 2016 Tomáš Mráz <tmraz@redhat.com> 1.0.2j-2
+- drop read lock in fips_drbg_status that is unnecessary
+  and causes deadlock when reseeding (#1400922)
+
 * Fri Oct 07 2016 Richard W.M. Jones <rjones@redhat.com> - 1:1.0.2j-2
 - Add flags for riscv64.
 
