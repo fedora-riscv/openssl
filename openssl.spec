@@ -22,8 +22,8 @@
 
 Summary: Utilities from the general purpose cryptography library with TLS implementation
 Name: openssl
-Version: 1.0.2j
-Release: 3%{?dist}
+Version: 1.0.2k
+Release: 1%{?dist}
 Epoch: 1
 # We have to remove certain patented algorithms from the openssl source
 # tarball with the hobble-openssl script which is included below.
@@ -31,6 +31,7 @@ Epoch: 1
 Source: openssl-%{version}-hobbled.tar.xz
 Source1: hobble-openssl
 Source2: Makefile.certificate
+Source5: README.legacy-settings
 Source6: make-dummy-cert
 Source7: renew-dummy-cert
 Source8: openssl-thread-test.c
@@ -57,6 +58,7 @@ Patch34: openssl-1.0.2a-x509.patch
 Patch35: openssl-1.0.2a-version-add-engines.patch
 Patch39: openssl-1.0.2a-ipv6-apps.patch
 Patch40: openssl-1.0.2i-fips.patch
+Patch43: openssl-1.0.2j-krb5keytab.patch
 Patch45: openssl-1.0.2a-env-zlib.patch
 Patch47: openssl-1.0.2a-readme-warning.patch
 Patch49: openssl-1.0.1i-algo-doc.patch
@@ -73,10 +75,11 @@ Patch70: openssl-1.0.2a-fips-ec.patch
 Patch71: openssl-1.0.2g-manfix.patch
 Patch72: openssl-1.0.2a-fips-ctor.patch
 Patch73: openssl-1.0.2c-ecc-suiteb.patch
-Patch74: openssl-1.0.2a-no-md5-verify.patch
+Patch74: openssl-1.0.2j-deprecate-algos.patch
 Patch75: openssl-1.0.2a-compat-symbols.patch
-Patch76: openssl-1.0.2i-new-fips-reqs.patch
-Patch78: openssl-1.0.2a-cc-reqs.patch
+Patch76: openssl-1.0.2j-new-fips-reqs.patch
+Patch77: openssl-1.0.2j-downgrade-strength.patch
+Patch78: openssl-1.0.2k-cc-reqs.patch
 Patch90: openssl-1.0.2i-enc-fail.patch
 Patch92: openssl-1.0.2a-system-cipherlist.patch
 Patch93: openssl-1.0.2g-disable-sslv2v3.patch
@@ -87,6 +90,7 @@ Patch96: openssl-1.0.2e-speed-doc.patch
 Patch80: openssl-1.0.2e-wrap-pad.patch
 Patch81: openssl-1.0.2a-padlock64.patch
 Patch82: openssl-1.0.2i-trusted-first-doc.patch
+Patch83: openssl-1.0.2k-backports.patch
 
 License: OpenSSL
 Group: System Environment/Libraries
@@ -180,6 +184,7 @@ cp %{SOURCE12} %{SOURCE13} crypto/ec/
 %patch35 -p1 -b .version-add-engines
 %patch39 -p1 -b .ipv6-apps
 %patch40 -p1 -b .fips
+%patch43 -p1 -b .krb5keytab 
 %patch45 -p1 -b .env-zlib
 %patch47 -p1 -b .warning
 %patch49 -p1 -b .algo-doc
@@ -196,9 +201,10 @@ cp %{SOURCE12} %{SOURCE13} crypto/ec/
 %patch71 -p1 -b .manfix
 %patch72 -p1 -b .fips-ctor
 %patch73 -p1 -b .suiteb
-%patch74 -p1 -b .no-md5-verify
+%patch74 -p1 -b .deprecate-algos
 %patch75 -p1 -b .compat
 %patch76 -p1 -b .fips-reqs
+%patch77 -p1 -b .strength
 %patch78 -p1 -b .cc-reqs
 %patch90 -p1 -b .enc-fail
 %patch92 -p1 -b .system
@@ -210,6 +216,7 @@ cp %{SOURCE12} %{SOURCE13} crypto/ec/
 %patch80 -p1 -b .wrap
 %patch81 -p1 -b .padlock64
 %patch82 -p1 -b .trusted-first
+%patch83 -p1 -b .backports
 
 sed -i 's/SHLIB_VERSION_NUMBER "1.0.0"/SHLIB_VERSION_NUMBER "%{version}"/' crypto/opensslv.h
 
@@ -304,8 +311,8 @@ make all
 # Generate hashes for the included certs.
 make rehash
 
-# Overwrite FIPS README
-cp -f %{SOURCE11} .
+# Overwrite FIPS README and copy README.legacy-settings
+cp -f %{SOURCE5} %{SOURCE11} .
 
 # Clean up the .pc files
 for i in libcrypto.pc libssl.pc openssl.pc ; do
@@ -446,7 +453,9 @@ rm -rf $RPM_BUILD_ROOT/%{_libdir}/fipscanister.*
 %defattr(-,root,root)
 %{!?_licensedir:%global license %%doc}
 %license LICENSE
-%doc FAQ NEWS README README.FIPS
+%doc FAQ NEWS README
+%doc README.FIPS
+%doc README.legacy-settings
 %{_sysconfdir}/pki/tls/certs/make-dummy-cert
 %{_sysconfdir}/pki/tls/certs/renew-dummy-cert
 %{_sysconfdir}/pki/tls/certs/Makefile
@@ -508,6 +517,13 @@ rm -rf $RPM_BUILD_ROOT/%{_libdir}/fipscanister.*
 %postun libs -p /sbin/ldconfig
 
 %changelog
+* Mon Feb  6 2017 Tomáš Mráz <tmraz@redhat.com> 1.0.2k-1
+- minor upstream release 1.0.2k fixing security issues
+- deprecate and disable verification of insecure hash algorithms
+- add support for /etc/pki/tls/legacy-settings also for minimum DH length
+  accepted by SSL client
+- compare the encrypt and tweak key in XTS as required by FIPS
+
 * Fri Dec  2 2016 Tomáš Mráz <tmraz@redhat.com> 1.0.2j-2
 - drop read lock in fips_drbg_status that is unnecessary
   and causes deadlock when reseeding (#1400922)
