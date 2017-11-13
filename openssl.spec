@@ -22,7 +22,7 @@
 
 Summary: Utilities from the general purpose cryptography library with TLS implementation
 Name: openssl
-Version: 1.0.2k
+Version: 1.0.2m
 Release: 1%{?dist}
 Epoch: 1
 # We have to remove certain patented algorithms from the openssl source
@@ -57,8 +57,8 @@ Patch33: openssl-1.0.0-beta4-ca-dir.patch
 Patch34: openssl-1.0.2a-x509.patch
 Patch35: openssl-1.0.2a-version-add-engines.patch
 Patch39: openssl-1.0.2a-ipv6-apps.patch
-Patch40: openssl-1.0.2i-fips.patch
-Patch43: openssl-1.0.2j-krb5keytab.patch
+Patch40: openssl-1.0.2m-fips.patch
+Patch43: openssl-1.0.2m-krb5keytab.patch
 Patch45: openssl-1.0.2a-env-zlib.patch
 Patch47: openssl-1.0.2a-readme-warning.patch
 Patch49: openssl-1.0.1i-algo-doc.patch
@@ -70,9 +70,9 @@ Patch60: openssl-1.0.2a-apps-dgst.patch
 Patch63: openssl-1.0.2a-xmpp-starttls.patch
 Patch65: openssl-1.0.2i-chil-fixes.patch
 Patch66: openssl-1.0.2h-pkgconfig.patch
-Patch68: openssl-1.0.2i-secure-getenv.patch
+Patch68: openssl-1.0.2m-secure-getenv.patch
 Patch70: openssl-1.0.2a-fips-ec.patch
-Patch71: openssl-1.0.2g-manfix.patch
+Patch71: openssl-1.0.2m-manfix.patch
 Patch72: openssl-1.0.2a-fips-ctor.patch
 Patch73: openssl-1.0.2c-ecc-suiteb.patch
 Patch74: openssl-1.0.2j-deprecate-algos.patch
@@ -86,11 +86,11 @@ Patch93: openssl-1.0.2g-disable-sslv2v3.patch
 Patch94: openssl-1.0.2d-secp256k1.patch
 Patch95: openssl-1.0.2e-remove-nistp224.patch
 Patch96: openssl-1.0.2e-speed-doc.patch
+Patch99: openssl-1.0.2k-fips-randlock.patch
 # Backported fixes including security fixes
 Patch80: openssl-1.0.2e-wrap-pad.patch
 Patch81: openssl-1.0.2a-padlock64.patch
-Patch82: openssl-1.0.2i-trusted-first-doc.patch
-Patch83: openssl-1.0.2k-backports.patch
+Patch82: openssl-1.0.2m-trusted-first-doc.patch
 
 License: OpenSSL
 Group: System Environment/Libraries
@@ -212,11 +212,11 @@ cp %{SOURCE12} %{SOURCE13} crypto/ec/
 %patch94 -p1 -b .secp256k1
 %patch95 -p1 -b .nistp224
 %patch96 -p1 -b .speed-doc
+%patch99 -p1 -b .randlock
 
 %patch80 -p1 -b .wrap
 %patch81 -p1 -b .padlock64
 %patch82 -p1 -b .trusted-first
-%patch83 -p1 -b .backports
 
 sed -i 's/SHLIB_VERSION_NUMBER "1.0.0"/SHLIB_VERSION_NUMBER "%{version}"/' crypto/opensslv.h
 
@@ -517,6 +517,10 @@ rm -rf $RPM_BUILD_ROOT/%{_libdir}/fipscanister.*
 %postun libs -p /sbin/ldconfig
 
 %changelog
+* Mon Nov 13 2017 Tomáš Mráz <tmraz@redhat.com> 1.0.2m-1
+- minor upstream release 1.0.2k fixing security issues
+- fix locking of RNG in FIPS mode for some obscure use-cases
+
 * Mon Feb  6 2017 Tomáš Mráz <tmraz@redhat.com> 1.0.2k-1
 - minor upstream release 1.0.2k fixing security issues
 - deprecate and disable verification of insecure hash algorithms
