@@ -518,7 +518,7 @@ rm -rf $RPM_BUILD_ROOT/%{_libdir}/fipscanister.*
 
 %changelog
 * Mon Nov 13 2017 Tomáš Mráz <tmraz@redhat.com> 1.0.2m-1
-- minor upstream release 1.0.2k fixing security issues
+- minor upstream release 1.0.2m fixing security issues
 - fix locking of RNG in FIPS mode for some obscure use-cases
 
 * Mon Feb  6 2017 Tomáš Mráz <tmraz@redhat.com> 1.0.2k-1
