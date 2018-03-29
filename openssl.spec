@@ -21,7 +21,7 @@
 
 Summary: Utilities from the general purpose cryptography library with TLS implementation
 Name: openssl
-Version: 1.1.0g
+Version: 1.1.0h
 Release: 1%{?dist}
 Epoch: 1
 # We have to remove certain patented algorithms from the openssl source
@@ -49,7 +49,6 @@ Patch23: openssl-1.1.0-manfix.patch
 Patch31: openssl-1.1.0-ca-dir.patch
 Patch32: openssl-1.1.0-version-add-engines.patch
 Patch33: openssl-1.1.0-apps-dgst.patch
-Patch34: openssl-1.1.0-starttls-xmpp.patch
 Patch35: openssl-1.1.0-chil-fixes.patch
 Patch36: openssl-1.1.0-secure-getenv.patch
 Patch37: openssl-1.1.0-ec-curves.patch
@@ -60,17 +59,20 @@ Patch41: openssl-1.1.0-system-cipherlist.patch
 Patch42: openssl-1.1.0-fips.patch
 Patch44: openssl-1.1.0-bio-fd-preserve-nl.patch
 Patch45: openssl-1.1.0-weak-ciphers.patch
+Patch46: openssl-1.1.0-silent-rnd-write.patch
 # Backported fixes including security fixes
 
 License: OpenSSL
 Group: System Environment/Libraries
 URL: http://www.openssl.org/
+BuildRequires: gcc
 BuildRequires: coreutils, krb5-devel, perl-interpreter, sed, zlib-devel, /usr/bin/cmp
 BuildRequires: lksctp-tools-devel
 BuildRequires: /usr/bin/rename
 BuildRequires: /usr/bin/pod2man
 BuildRequires: perl(Test::Harness), perl(Test::More), perl(Math::BigInt)
-BuildRequires: perl(Module::Load::Conditional)
+BuildRequires: perl(Module::Load::Conditional), perl(File::Temp)
+BuildRequires: perl(Time::HiRes)
 Requires: coreutils, make
 Requires: %{name}-libs%{?_isa} = %{epoch}:%{version}-%{release}
 
@@ -150,7 +152,6 @@ cp %{SOURCE13} test/
 %patch31 -p1 -b .ca-dir
 %patch32 -p1 -b .version-add-engines
 %patch33 -p1 -b .dgst
-%patch34 -p1 -b .xmpp
 %patch35 -p1 -b .chil
 %patch36 -p1 -b .secure-getenv
 %patch37 -p1 -b .curves
@@ -161,6 +162,7 @@ cp %{SOURCE13} test/
 %patch42 -p1 -b .fips
 %patch44 -p1 -b .preserve-nl
 %patch45 -p1 -b .weak-ciphers
+%patch46 -p1 -b .silent-rnd-write
 
 %build
 # Figure out which flags we want to use.
@@ -226,7 +228,7 @@ sslarch=linux-generic64
 # marked as not requiring an executable stack.
 # Also add -DPURIFY to make using valgrind with openssl easier as we do not
 # want to depend on the uninitialized memory as a source of entropy anyway.
-RPM_OPT_FLAGS="$RPM_OPT_FLAGS -Wa,--noexecstack -DPURIFY"
+RPM_OPT_FLAGS="$RPM_OPT_FLAGS -Wa,--noexecstack -DPURIFY $RPM_LD_FLAGS"
 
 export HASHBANGPERL=/usr/bin/perl
 
@@ -431,6 +433,11 @@ export LD_LIBRARY_PATH
 %postun libs -p /sbin/ldconfig
 
 %changelog
+* Thu Mar 29 2018 Tomáš Mráz <tmraz@redhat.com> 1.1.0h-1
+- update to upstream version 1.1.0h
+- apply RPM_LD_FLAGS properly (#1541033)
+- silence the .rnd write failure as that is auxiliary functionality (#1524833)
+
 * Fri Nov  3 2017 Tomáš Mráz <tmraz@redhat.com> 1.1.0g-1
 - update to upstream version 1.1.0g
 
