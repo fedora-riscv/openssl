@@ -245,7 +245,8 @@ export HASHBANGPERL=/usr/bin/perl
 	no-mdc2 no-ec2m \
 	shared  ${sslarch} $RPM_OPT_FLAGS
 
-util/mkdef.pl crypto update
+# Do not run this in a production package the FIPS symbols must be patched-in
+#util/mkdef.pl crypto update
 
 make all
 
