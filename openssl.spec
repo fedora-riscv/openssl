@@ -15,14 +15,14 @@
 
 # Arches on which we need to prevent arch conflicts on opensslconf.h, must
 # also be handled in opensslconf-new.h.
-%define multilib_arches %{ix86} ia64 %{mips} ppc %{power64} s390 s390x sparcv9 sparc64 x86_64
+%define multilib_arches %{ix86} ia64 %{mips} ppc ppc64 s390 s390x sparcv9 sparc64 x86_64
 
 %global _performance_build 1
 
 Summary: Utilities from the general purpose cryptography library with TLS implementation
 Name: openssl
-Version: 1.1.0h
-Release: 3%{?dist}
+Version: 1.1.0i
+Release: 1%{?dist}
 Epoch: 1
 # We have to remove certain patented algorithms from the openssl source
 # tarball with the hobble-openssl script which is included below.
@@ -61,7 +61,6 @@ Patch44: openssl-1.1.0-bio-fd-preserve-nl.patch
 Patch45: openssl-1.1.0-weak-ciphers.patch
 Patch46: openssl-1.1.0-silent-rnd-write.patch
 # Backported fixes including security fixes
-Patch70: openssl-1.1.0-missing-quotes.patch
 
 License: OpenSSL
 Group: System Environment/Libraries
@@ -165,7 +164,6 @@ cp %{SOURCE13} test/
 %patch45 -p1 -b .weak-ciphers
 %patch46 -p1 -b .silent-rnd-write
 
-%patch70 -p1 -b .missing-quotes
 
 %build
 # Figure out which flags we want to use.
@@ -293,7 +291,7 @@ make test
 %install
 [ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
 # Install OpenSSL.
-install -d $RPM_BUILD_ROOT{%{_bindir},%{_includedir},%{_libdir},%{_mandir},%{_libdir}/openssl}
+install -d $RPM_BUILD_ROOT{%{_bindir},%{_includedir},%{_libdir},%{_mandir},%{_libdir}/openssl,%{_pkgdocdir}}
 make DESTDIR=$RPM_BUILD_ROOT install
 rename so.%{soversion} so.%{version} $RPM_BUILD_ROOT%{_libdir}/*.so.%{soversion}
 for lib in $RPM_BUILD_ROOT%{_libdir}/*.so.%{version} ; do
@@ -305,7 +303,7 @@ done
 # Install a makefile for generating keys and self-signed certs, and a script
 # for generating them on the fly.
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/pki/tls/certs
-install -m644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/pki/tls/certs/Makefile
+install -m644 %{SOURCE2} $RPM_BUILD_ROOT%{_pkgdocdir}/Makefile.certificate
 install -m755 %{SOURCE6} $RPM_BUILD_ROOT%{_bindir}/make-dummy-cert
 install -m755 %{SOURCE7} $RPM_BUILD_ROOT%{_bindir}/renew-dummy-cert
 
@@ -334,6 +332,11 @@ for manpage in man*/* ; do
 done
 for conflict in passwd rand ; do
 	rename ${conflict} ssl${conflict} man*/${conflict}*
+# Fix dangling symlinks
+	manpage=man1/openssl-${conflict}.*
+	if [ -L ${manpage} ] ; then
+		ln -snf ssl${conflict}.1ssl ${manpage}
+	fi
 done
 popd
 
@@ -343,11 +346,13 @@ mkdir -m755 $RPM_BUILD_ROOT%{_sysconfdir}/pki/CA/certs
 mkdir -m755 $RPM_BUILD_ROOT%{_sysconfdir}/pki/CA/crl
 mkdir -m755 $RPM_BUILD_ROOT%{_sysconfdir}/pki/CA/newcerts
 
-# Ensure the openssl.cnf timestamp is identical across builds to avoid
+# Ensure the config file timestamps are identical across builds to avoid
 # mulitlib conflicts and unnecessary renames on upgrade
 touch -r %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/pki/tls/openssl.cnf
+touch -r %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/pki/tls/ct_log_list.cnf
 
 rm -f $RPM_BUILD_ROOT%{_sysconfdir}/pki/tls/openssl.cnf.dist
+rm -f $RPM_BUILD_ROOT%{_sysconfdir}/pki/tls/ct_log_list.cnf.dist
 
 # Determine which arch opensslconf.h is going to try to #include.
 basearch=%{_arch}
@@ -375,9 +380,6 @@ install -m644 %{SOURCE9} \
 LD_LIBRARY_PATH=`pwd`${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 export LD_LIBRARY_PATH
 
-%clean
-[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
-
 %files
 %{!?_licensedir:%global license %%doc}
 %license LICENSE
@@ -392,6 +394,7 @@ export LD_LIBRARY_PATH
 %exclude %{_mandir}/man1*/*.pl*
 %exclude %{_mandir}/man1*/c_rehash*
 %exclude %{_mandir}/man1*/tsget*
+%exclude %{_mandir}/man1*/openssl-tsget*
 
 %files libs
 %{!?_licensedir:%global license %%doc}
@@ -401,6 +404,7 @@ export LD_LIBRARY_PATH
 %dir %{_sysconfdir}/pki/tls/misc
 %dir %{_sysconfdir}/pki/tls/private
 %config(noreplace) %{_sysconfdir}/pki/tls/openssl.cnf
+%config(noreplace) %{_sysconfdir}/pki/tls/ct_log_list.cnf
 %attr(0755,root,root) %{_libdir}/libcrypto.so.%{version}
 %attr(0755,root,root) %{_libdir}/libcrypto.so.%{soversion}
 %attr(0755,root,root) %{_libdir}/libssl.so.%{version}
@@ -426,6 +430,7 @@ export LD_LIBRARY_PATH
 %{_mandir}/man1*/*.pl*
 %{_mandir}/man1*/c_rehash*
 %{_mandir}/man1*/tsget*
+%{_mandir}/man1*/openssl-tsget*
 %dir %{_sysconfdir}/pki/CA
 %dir %{_sysconfdir}/pki/CA/private
 %dir %{_sysconfdir}/pki/CA/certs
@@ -437,6 +442,9 @@ export LD_LIBRARY_PATH
 %postun libs -p /sbin/ldconfig
 
 %changelog
+* Thu Sep 20 2018 Tomáš Mráz <tmraz@redhat.com> 1.1.0i-1
+- update to upstream version 1.1.0i
+
 * Tue Apr  3 2018 Tomáš Mráz <tmraz@redhat.com> 1.1.0h-3
 - fix regression of c_rehash (#1562953)
 
