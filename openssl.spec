@@ -303,7 +303,7 @@ done
 # Install a makefile for generating keys and self-signed certs, and a script
 # for generating them on the fly.
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/pki/tls/certs
-install -m644 %{SOURCE2} $RPM_BUILD_ROOT%{_pkgdocdir}/Makefile.certificate
+install -m644 %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/pki/tls/certs/Makefile
 install -m755 %{SOURCE6} $RPM_BUILD_ROOT%{_bindir}/make-dummy-cert
 install -m755 %{SOURCE7} $RPM_BUILD_ROOT%{_bindir}/renew-dummy-cert
 
