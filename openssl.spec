@@ -21,7 +21,7 @@
 
 Summary: Utilities from the general purpose cryptography library with TLS implementation
 Name: openssl
-Version: 1.1.1g
+Version: 1.1.1i
 Release: 1%{?dist}
 Epoch: 1
 # We have to remove certain patented algorithms from the openssl source
@@ -54,7 +54,6 @@ Patch38: openssl-1.1.1-no-weak-verify.patch
 Patch40: openssl-1.1.1-disable-ssl3.patch
 Patch41: openssl-1.1.1-system-cipherlist.patch
 Patch42: openssl-1.1.1-fips.patch
-Patch43: openssl-1.1.1-ignore-bound.patch
 Patch44: openssl-1.1.1-version-override.patch
 Patch45: openssl-1.1.1-weak-ciphers.patch
 Patch46: openssl-1.1.1-seclevel.patch
@@ -158,7 +157,6 @@ cp %{SOURCE13} test/
 %patch40 -p1 -b .disable-ssl3
 %patch41 -p1 -b .system-cipherlist
 %patch42 -p1 -b .fips
-%patch43 -p1 -b .ignore-bound
 %patch44 -p1 -b .version-override
 %patch45 -p1 -b .weak-ciphers
 %patch46 -p1 -b .seclevel
@@ -410,6 +408,7 @@ export LD_LIBRARY_PATH
 %{_pkgdocdir}/Makefile.certificate
 %exclude %{_mandir}/man1*/*.pl*
 %exclude %{_mandir}/man1*/c_rehash*
+%exclude %{_mandir}/man1*/openssl-c_rehash*
 %exclude %{_mandir}/man1*/tsget*
 %exclude %{_mandir}/man1*/openssl-tsget*
 
@@ -446,6 +445,7 @@ export LD_LIBRARY_PATH
 %{_bindir}/tsget
 %{_mandir}/man1*/*.pl*
 %{_mandir}/man1*/c_rehash*
+%{_mandir}/man1*/openssl-c_rehash*
 %{_mandir}/man1*/tsget*
 %{_mandir}/man1*/openssl-tsget*
 %dir %{_sysconfdir}/pki/CA
@@ -457,6 +457,9 @@ export LD_LIBRARY_PATH
 %ldconfig_scriptlets libs
 
 %changelog
+* Wed Dec 9 2020 Tomáš Mráz <tmraz@redhat.com> 1.1.1i-1
+- Update to the 1.1.1i release fixing CVE-2020-1971
+
 * Thu Apr 23 2020 Tomáš Mráz <tmraz@redhat.com> 1.1.1g-1
 - update to the 1.1.1g release
 
