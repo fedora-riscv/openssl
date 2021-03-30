@@ -21,7 +21,7 @@
 
 Summary: Utilities from the general purpose cryptography library with TLS implementation
 Name: openssl
-Version: 1.1.1i
+Version: 1.1.1k
 Release: 1%{?dist}
 Epoch: 1
 # We have to remove certain patented algorithms from the openssl source
@@ -42,8 +42,7 @@ Patch1: openssl-1.1.1-build.patch
 Patch2: openssl-1.1.1-defaults.patch
 Patch3: openssl-1.1.1-no-html.patch
 Patch4: openssl-1.1.1-man-rename.patch
-# Bug fixes
-Patch21: openssl-1.1.0-issuer-hash.patch
+
 # Functionality changes
 Patch31: openssl-1.1.1-conf-paths.patch
 Patch32: openssl-1.1.1-version-add-engines.patch
@@ -61,15 +60,24 @@ Patch47: openssl-1.1.1-ts-sha256-default.patch
 Patch48: openssl-1.1.1-fips-post-rand.patch
 Patch49: openssl-1.1.1-evp-kdf.patch
 Patch50: openssl-1.1.1-ssh-kdf.patch
+Patch51: openssl-1.1.1-intel-cet.patch
 Patch60: openssl-1.1.1-krb5-kdf.patch
-Patch61: openssl-1.1.1-intel-cet.patch
+Patch61: openssl-1.1.1-edk2-build.patch
+Patch62: openssl-1.1.1-fips-curves.patch
 Patch65: openssl-1.1.1-fips-drbg-selftest.patch
+Patch66: openssl-1.1.1-fips-dh.patch
+Patch67: openssl-1.1.1-kdf-selftest.patch
+Patch69: openssl-1.1.1-alpn-cb.patch
+Patch70: openssl-1.1.1-rewire-fips-drbg.patch
 # Backported fixes including security fixes
 Patch52: openssl-1.1.1-s390x-update.patch
 Patch53: openssl-1.1.1-fips-crng-test.patch
+Patch55: openssl-1.1.1-arm-update.patch
+Patch56: openssl-1.1.1-s390x-ecc.patch
 
-License: OpenSSL
+License: OpenSSL and ASL 2.0
 URL: http://www.openssl.org/
+BuildRequires: make
 BuildRequires: gcc
 BuildRequires: coreutils, perl-interpreter, sed, zlib-devel, /usr/bin/cmp
 BuildRequires: lksctp-tools-devel
@@ -146,8 +154,6 @@ cp %{SOURCE13} test/
 %patch3 -p1 -b .no-html  %{?_rawbuild}
 %patch4 -p1 -b .man-rename
 
-%patch21 -p1 -b .issuer-hash
-
 %patch31 -p1 -b .conf-paths
 %patch32 -p1 -b .version-add-engines
 %patch33 -p1 -b .dgst
@@ -164,11 +170,19 @@ cp %{SOURCE13} test/
 %patch48 -p1 -b .fips-post-rand
 %patch49 -p1 -b .evp-kdf
 %patch50 -p1 -b .ssh-kdf
+%patch51 -p1 -b .intel-cet
 %patch52 -p1 -b .s390x-update
 %patch53 -p1 -b .crng-test
+%patch55 -p1 -b .arm-update
+%patch56 -p1 -b .s390x-ecc
 %patch60 -p1 -b .krb5-kdf
-%patch61 -p1 -b .intel-cet
+%patch61 -p1 -b .edk2-build
+%patch62 -p1 -b .fips-curves
 %patch65 -p1 -b .drbg-selftest
+%patch66 -p1 -b .fips-dh
+%patch67 -p1 -b .kdf-selftest
+%patch69 -p1 -b .alpn-cb
+%patch70 -p1 -b .rewire-fips-drbg
 
 
 %build
@@ -307,7 +321,7 @@ make test
 [ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
 # Install OpenSSL.
 install -d $RPM_BUILD_ROOT{%{_bindir},%{_includedir},%{_libdir},%{_mandir},%{_libdir}/openssl,%{_pkgdocdir}}
-make DESTDIR=$RPM_BUILD_ROOT install
+%make_install
 rename so.%{soversion} so.%{version} $RPM_BUILD_ROOT%{_libdir}/*.so.%{soversion}
 for lib in $RPM_BUILD_ROOT%{_libdir}/*.so.%{version} ; do
 	chmod 755 ${lib}
@@ -457,8 +471,70 @@ export LD_LIBRARY_PATH
 %ldconfig_scriptlets libs
 
 %changelog
+* Fri Mar 26 2021 Sahana Prasad <sahana@redhat.com> - 1:1.1.1k-1
+- Upgrade to version 1.1.1.k
+
+* Tue Feb 23 2021 Sahana Prasad <sahana@redhat.com> - 1:1.1.1j-1
+- Upgrade to version 1.1.1.j
+
+* Wed Feb 10 2021 Sahana Prasad <sahana@redhat.com> - 1:1.1.1i-3
+- Fix regression in X509_verify_cert() (bz1916594)
+
+* Tue Jan 26 2021 Fedora Release Engineering <releng@fedoraproject.org> - 1:1.1.1i-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_34_Mass_Rebuild
+
 * Wed Dec 9 2020 Tomáš Mráz <tmraz@redhat.com> 1.1.1i-1
 - Update to the 1.1.1i release fixing CVE-2020-1971
+
+* Mon Nov 9 2020 Sahana Prasad <sahana@redhat.com> - 1.1.1h-1
+- Upgrade to version 1.1.1.h
+
+* Tue Jul 28 2020 Fedora Release Engineering <releng@fedoraproject.org> - 1:1.1.1g-15
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
+
+* Tue Jul 21 2020 Tom Stellard <tstellar@redhat.com> - 1:1.1.1g-14
+- Use make macros
+- https://fedoraproject.org/wiki/Changes/UseMakeBuildInstallMacro
+
+* Mon Jul 20 2020 Tomáš Mráz <tmraz@redhat.com> 1.1.1g-13
+- Additional FIPS mode check for EC key generation
+
+* Fri Jul 17 2020 Tomáš Mráz <tmraz@redhat.com> 1.1.1g-12
+- Further changes for SP 800-56A rev3 requirements
+
+* Mon Jun 22 2020 Tomáš Mráz <tmraz@redhat.com> 1.1.1g-11
+- Drop long ago obsolete part of the FIPS patch
+
+* Mon Jun 22 2020 Tomáš Mráz <tmraz@redhat.com> 1.1.1g-10
+- Rewire FIPS_drbg API to use the RAND_DRBG
+
+* Fri Jun  5 2020 Tomáš Mráz <tmraz@redhat.com> 1.1.1g-9
+- Disallow dropping Extended Master Secret extension
+  on renegotiation
+- Return alert from s_server if ALPN protocol does not match
+- SHA1 is allowed in @SECLEVEL=2 only if allowed by
+  TLS SigAlgs configuration
+
+* Wed Jun  3 2020 Tomáš Mráz <tmraz@redhat.com> 1.1.1g-8
+- Add FIPS selftest for PBKDF2 and KBKDF
+
+* Tue May 26 2020 Tomáš Mráz <tmraz@redhat.com> 1.1.1g-7
+- Use the well known DH groups in TLS
+
+* Mon May 25 2020 Tomáš Mráz <tmraz@redhat.com> 1.1.1g-6
+- Allow only well known DH groups in the FIPS mode
+
+* Thu May 21 2020 Adam Williamson <awilliam@redhat.com> - 1.1.1g-5
+- Re-apply the change from -2 now we have fixed nosync to work with it
+
+* Tue May 19 2020 Adam Williamson <awilliam@redhat.com> - 1.1.1g-4
+- Revert the change from -2 as it seems to cause segfaults in systemd
+
+* Mon May 18 2020 Tomáš Mráz <tmraz@redhat.com> 1.1.1g-3
+- pull some fixes and improvements from RHEL-8
+
+* Fri May 15 2020 Tomáš Mráz <tmraz@redhat.com> 1.1.1g-2
+- FIPS module installed state definition is modified
 
 * Thu Apr 23 2020 Tomáš Mráz <tmraz@redhat.com> 1.1.1g-1
 - update to the 1.1.1g release
