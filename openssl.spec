@@ -22,7 +22,7 @@
 Summary: Utilities from the general purpose cryptography library with TLS implementation
 Name: openssl
 Version: 1.1.1l
-Release: 1%{?dist}
+Release: 2%{?dist}
 Epoch: 1
 # We have to remove certain patented algorithms from the openssl source
 # tarball with the hobble-openssl script which is included below.
@@ -90,6 +90,9 @@ BuildRequires: perl(Time::HiRes)
 BuildRequires: perl(FindBin), perl(lib), perl(File::Compare), perl(File::Copy)
 Requires: coreutils
 Requires: %{name}-libs%{?_isa} = %{epoch}:%{version}-%{release}
+Provides: openssl1.1 = %{epoch}:%{version}-%{release}
+Provides: openssl1.1%{?_isa} = %{epoch}:%{version}-%{release}
+Obsoletes: openssl1.1 < 1.1.1l-2
 
 %description
 The OpenSSL toolkit provides support for secure communications between
@@ -103,6 +106,8 @@ Requires: ca-certificates >= 2008-5
 Requires: crypto-policies >= 20180730
 Recommends: openssl-pkcs11%{?_isa}
 Provides: openssl-fips = %{epoch}:%{version}-%{release}
+Provides: openssl1.1-libs = %{epoch}:%{version}-%{release}
+Provides: openssl1.1-libs%{?_isa} = %{epoch}:%{version}-%{release}
 
 %description libs
 OpenSSL is a toolkit for supporting cryptography. The openssl-libs
@@ -113,6 +118,9 @@ support cryptographic algorithms and protocols.
 Summary: Files for development of applications which will use OpenSSL
 Requires: %{name}-libs%{?_isa} = %{epoch}:%{version}-%{release}
 Requires: pkgconfig
+Provides: openssl1.1-devel = %{epoch}:%{version}-%{release}
+Provides: openssl1.1-devel%{?_isa} = %{epoch}:%{version}-%{release}
+Obsoletes: openssl1.1-devel < 1.1.1l-2
 
 %description devel
 OpenSSL is a toolkit for supporting cryptography. The openssl-devel
@@ -471,6 +479,9 @@ export LD_LIBRARY_PATH
 %ldconfig_scriptlets libs
 
 %changelog
+* Wed Sep 15 2021 Miro Hrončok <mhroncok@redhat.com> - 1:1.1.1l-2
+- Provide and obsolete openssl1.1 to allow using openssl1.1-devel on Fedora < 36
+
 * Wed Aug 25 2021 Sahana Prasad <sahana@redhat.com> - 1:1.1.1l-1
 - Upgrade to version 1.1.1.l
 
