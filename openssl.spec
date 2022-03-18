@@ -21,8 +21,8 @@
 
 Summary: Utilities from the general purpose cryptography library with TLS implementation
 Name: openssl
-Version: 1.1.1l
-Release: 2%{?dist}
+Version: 1.1.1n
+Release: 1%{?dist}
 Epoch: 1
 # We have to remove certain patented algorithms from the openssl source
 # tarball with the hobble-openssl script which is included below.
@@ -479,6 +479,9 @@ export LD_LIBRARY_PATH
 %ldconfig_scriptlets libs
 
 %changelog
+* Fri Mar 18 2022 Dmitry Belyavskiy <dbelyavs@redhat.com> - 1:1.1.1n-1
+- Upgrade to version 1.1.1n
+
 * Wed Sep 15 2021 Miro Hrončok <mhroncok@redhat.com> - 1:1.1.1l-2
 - Provide and obsolete openssl1.1 to allow using openssl1.1-devel on Fedora < 36
 
