@@ -15,7 +15,7 @@
 Summary: Utilities from the general purpose cryptography library with TLS implementation
 Name: openssl
 Version: 3.0.2
-Release: 3%{?dist}
+Release: 4%{?dist}
 Epoch: 1
 # We have to remove certain patented algorithms from the openssl source
 # tarball with the hobble-openssl script which is included below.
@@ -65,6 +65,8 @@ Patch51: 0051-Support-different-R_BITS-lengths-for-KBKDF.patch
 Patch52: 0052-Allow-SHA1-in-seclevel-1-if-rh-allow-sha1-signatures.patch
 # https://github.com/openssl/openssl/pull/18103
 Patch56: 0056-strcasecmp.patch
+# https://github.com/openssl/openssl/pull/18175
+Patch57: 0057-strcasecmp-fix.patch
 
 License: ASL 2.0
 URL: http://www.openssl.org/
@@ -391,6 +393,12 @@ install -m644 %{SOURCE9} \
 %ldconfig_scriptlets libs
 
 %changelog
+* Wed Apr 27 2022 Clemens Lang <cllang@redhat.com> - 1:3.0.2-4
+- Fix regression in evp_pkey_name2type caused by tr_TR locale fix
+- Support rsa_pkcs1_md5_sha1 in TLS 1.0/1.1 with rh-allow-sha1-signatures = yes
+  to restore TLS 1.0 and 1.1 support in LEGACY crypto-policy.
+  Resolves: rhbz#2069239
+
 * Thu Apr 21 2022 Dmitry Belyavskiy <dbelyavs@redhat.com> - 1:3.0.2-3
 - Fixing Turkish locale issues
   Resolves: rhbz#2071343
