@@ -14,8 +14,8 @@
 
 Summary: Utilities from the general purpose cryptography library with TLS implementation
 Name: openssl
-Version: 3.0.2
-Release: 5%{?dist}
+Version: 3.0.3
+Release: 1%{?dist}
 Epoch: 1
 # We have to remove certain patented algorithms from the openssl source
 # tarball with the hobble-openssl script which is included below.
@@ -70,9 +70,11 @@ Patch52: 0052-Allow-SHA1-in-seclevel-1-if-rh-allow-sha1-signatures.patch
 Patch53: 0053-Add-SHA1-probes.patch
 %endif
 # https://github.com/openssl/openssl/pull/18103
+# The patch is incorporated in 3.0.3 but we provide this function since 3.0.1
+# so the patch should persist
 Patch56: 0056-strcasecmp.patch
-# https://github.com/openssl/openssl/pull/18175
-Patch57: 0057-strcasecmp-fix.patch
+# https://github.com/openssl/openssl/pull/18444
+Patch58: 0058-replace-expired-certs.patch
 
 License: ASL 2.0
 URL: http://www.openssl.org/
@@ -400,6 +402,9 @@ install -m644 %{SOURCE9} \
 %ldconfig_scriptlets libs
 
 %changelog
+* Wed Jun 01 2022 Dmitry Belyavskiy <dbelyavs@redhat.com> - 1:3.0.3-1
+- Rebase to upstream version 3.0.3
+
 * Thu Apr 28 2022 Clemens Lang <cllang@redhat.com> - 1:3.0.2-5
 - Instrument with USDT probes related to SHA-1 deprecation
 
