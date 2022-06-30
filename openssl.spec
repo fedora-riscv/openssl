@@ -21,7 +21,7 @@
 
 Summary: Utilities from the general purpose cryptography library with TLS implementation
 Name: openssl
-Version: 1.1.1o
+Version: 1.1.1p
 Release: 1%{?dist}
 Epoch: 1
 # We have to remove certain patented algorithms from the openssl source
@@ -69,12 +69,6 @@ Patch66: openssl-1.1.1-fips-dh.patch
 Patch67: openssl-1.1.1-kdf-selftest.patch
 Patch69: openssl-1.1.1-alpn-cb.patch
 Patch70: openssl-1.1.1-rewire-fips-drbg.patch
-# https://github.com/openssl/openssl/pull/18446
-Patch71: openssl-1.1.1-update-expired-sct-certificates.patch
-# https://github.com/openssl/openssl/pull/18446
-Patch72: openssl-1.1.1-ct_test-update-epoch-time.patch
-# https://github.com/openssl/openssl/pull/18481
-Patch73: openssl-1.1.1-update-further-expiring-certificates.patch
 # Backported fixes including security fixes
 Patch52: openssl-1.1.1-s390x-update.patch
 Patch53: openssl-1.1.1-fips-crng-test.patch
@@ -197,9 +191,6 @@ cp %{SOURCE13} test/
 %patch67 -p1 -b .kdf-selftest
 %patch69 -p1 -b .alpn-cb
 %patch70 -p1 -b .rewire-fips-drbg
-%patch71 -p1 -b .update-expired-sct-certificates
-%patch72 -p1 -b .ct_test-update-epoch-time
-%patch73 -p1 -b .update-further-expiring-certificates
 
 
 %build
@@ -488,6 +479,11 @@ export LD_LIBRARY_PATH
 %ldconfig_scriptlets libs
 
 %changelog
+* Thu Jun 30 2022 Clemens Lang <cllang@redhat.com> - 1:1.1.1p-1
+- Upgrade to 1.1.1p
+  Resolves: CVE-2022-2068
+  Related: rhbz#2099975
+
 * Mon Jun 13 2022 Clemens Lang <cllang@redhat.com> - 1:1.1.1o-1
 - Upgrade to 1.1.1o
   Resolves: CVE-2022-1292
