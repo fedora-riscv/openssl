@@ -21,7 +21,7 @@
 
 Summary: Utilities from the general purpose cryptography library with TLS implementation
 Name: openssl
-Version: 1.1.1p
+Version: 1.1.1q
 Release: 1%{?dist}
 Epoch: 1
 # We have to remove certain patented algorithms from the openssl source
@@ -479,6 +479,10 @@ export LD_LIBRARY_PATH
 %ldconfig_scriptlets libs
 
 %changelog
+* Thu Jul 07 2022 Clemens Lang <cllang@redhat.com> - 1:1.1.1q-1
+- Upgrade to 1.1.1q
+  Resolves: CVE-2022-2097
+
 * Thu Jun 30 2022 Clemens Lang <cllang@redhat.com> - 1:1.1.1p-1
 - Upgrade to 1.1.1p
   Resolves: CVE-2022-2068
