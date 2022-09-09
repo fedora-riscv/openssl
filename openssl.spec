@@ -15,7 +15,7 @@
 Summary: Utilities from the general purpose cryptography library with TLS implementation
 Name: openssl
 Version: 3.0.5
-Release: 3%{?dist}
+Release: 3.rv64%{?dist}
 Epoch: 1
 # We have to remove certain patented algorithms from the openssl source
 # tarball with the hobble-openssl script which is included below.
@@ -228,6 +228,9 @@ export HASHBANGPERL=/usr/bin/perl
 # RPM_OPT_FLAGS, so we can skip specifiying them here.
 ./Configure \
 	--prefix=%{_prefix} --openssldir=%{_sysconfdir}/pki/tls ${sslflags} \
+%ifarch riscv64
+    --libdir=%{_lib} \
+%endif
 	--system-ciphers-file=%{_sysconfdir}/crypto-policies/back-ends/openssl.config \
 	zlib enable-camellia enable-seed enable-rfc3779 enable-sctp \
 	enable-cms enable-md2 enable-rc5 ${ktlsopt} enable-fips\
@@ -416,6 +419,9 @@ install -m644 %{SOURCE9} \
 %ldconfig_scriptlets libs
 
 %changelog
+* Fri Sep 09 2022 David Abdurachmanov <davidlt@rivosinc.com> - 1:3.0.5-3.rv64
+- Add --libdir=%{_lib} for riscv64 (uses linux-generic64)
+
 * Tue Nov 01 2022 Dmitry Belyavskiy <dbelyavs@redhat.com> - 1:3.0.5-3
 - CVE-2022-3602: X.509 Email Address Buffer Overflow
 - CVE-2022-3786: X.509 Email Address Buffer Overflow
