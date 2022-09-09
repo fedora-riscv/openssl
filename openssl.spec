@@ -29,7 +29,7 @@ print(string.sub(hash, 0, 16))
 Summary: Utilities from the general purpose cryptography library with TLS implementation
 Name: openssl
 Version: 3.0.8
-Release: 2%{?dist}
+Release: 2.rv64%{?dist}
 Epoch: 1
 Source: openssl-%{version}.tar.gz
 Source2: Makefile.certificate
@@ -289,6 +289,9 @@ export HASHBANGPERL=/usr/bin/perl
 # RPM_OPT_FLAGS, so we can skip specifiying them here.
 ./Configure \
 	--prefix=%{_prefix} --openssldir=%{_sysconfdir}/pki/tls ${sslflags} \
+%ifarch riscv64
+    --libdir=%{_lib} \
+%endif
 	--system-ciphers-file=%{_sysconfdir}/crypto-policies/back-ends/openssl.config \
 	zlib enable-camellia enable-seed enable-rfc3779 enable-sctp \
 	enable-cms enable-md2 enable-rc5 ${ktlsopt} enable-fips\
@@ -483,6 +486,9 @@ install -m644 %{SOURCE9} \
 %ldconfig_scriptlets libs
 
 %changelog
+* Tue Mar 21 2023 Sahana Prasad <sahana@redhat.com> - 1:3.0.8-2.rv64
+- cherry-pick davidlt's patch for Fedora 38 riscv64 rebuilding.
+
 * Tue Mar 21 2023 Sahana Prasad <sahana@redhat.com> - 1:3.0.8-2
 - Upload new upstream sources without manually hobbling them.
 - Remove the hobbling script as it is redundant. It is now allowed to ship
@@ -530,6 +536,7 @@ install -m644 %{SOURCE9} \
 - Backport patches to fix external providers compatibility issues
 
 * Tue Nov 01 2022 Dmitry Belyavskiy <dbelyavs@redhat.com> - 1:3.0.5-6
+
 - CVE-2022-3602: X.509 Email Address Buffer Overflow
 - CVE-2022-3786: X.509 Email Address Buffer Overflow
   Resolves: CVE-2022-3602
@@ -543,9 +550,13 @@ install -m644 %{SOURCE9} \
 - Fix AES-GCM on Power 8 CPUs
   Resolves: rhbz#2124845
 
+* Fri Sep 09 2022 David Abdurachmanov <davidlt@rivosinc.com> - 1:3.0.5-3.rv64
+- Add --libdir=%{_lib} for riscv64 (uses linux-generic64)
+
 * Thu Sep 01 2022 Dmitry Belyavskiy <dbelyavs@redhat.com> - 1:3.0.5-3
 - Sync patches with RHEL
   Related: rhbz#2123755
+
 * Fri Jul 22 2022 Fedora Release Engineering <releng@fedoraproject.org> - 1:3.0.5-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_37_Mass_Rebuild
 
