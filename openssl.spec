@@ -15,7 +15,7 @@
 Summary: Utilities from the general purpose cryptography library with TLS implementation
 Name: openssl
 Version: 3.0.5
-Release: 2%{?dist}
+Release: 3%{?dist}
 Epoch: 1
 # We have to remove certain patented algorithms from the openssl source
 # tarball with the hobble-openssl script which is included below.
@@ -83,6 +83,8 @@ Patch53: 0053-Add-SHA1-probes.patch
 # The patch is incorporated in 3.0.3 but we provide this function since 3.0.1
 # so the patch should persist
 Patch56: 0056-strcasecmp.patch
+#CVE-2022-3602
+Patch79: 0079-CVE-2022-3602.patch
 
 License: ASL 2.0
 URL: http://www.openssl.org/
@@ -414,6 +416,12 @@ install -m644 %{SOURCE9} \
 %ldconfig_scriptlets libs
 
 %changelog
+* Tue Nov 01 2022 Dmitry Belyavskiy <dbelyavs@redhat.com> - 1:3.0.5-3
+- CVE-2022-3602: X.509 Email Address Buffer Overflow
+- CVE-2022-3786: X.509 Email Address Buffer Overflow
+  Resolves: CVE-2022-3602
+  Resolves: CVE-2022-3786
+
 * Fri Jul 22 2022 Fedora Release Engineering <releng@fedoraproject.org> - 1:3.0.5-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_37_Mass_Rebuild
 
