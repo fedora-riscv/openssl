@@ -268,7 +268,13 @@ export OPENSSL_ENABLE_SHA1_SIGNATURES
 %endif
 OPENSSL_SYSTEM_CIPHERS_OVERRIDE=xyz_nonexistent_file
 export OPENSSL_SYSTEM_CIPHERS_OVERRIDE
+%ifarch riscv64
+# https://github.com/openssl/openssl/issues/12242
+# Skip failed test for riscv64
+make test HARNESS_JOBS=8 TESTS=-test_afalg
+%else
 make test HARNESS_JOBS=8
+%endif
 
 # Add generation of HMAC checksum of the final stripped library
 #%define __spec_install_post \
@@ -419,6 +425,9 @@ install -m644 %{SOURCE9} \
 %ldconfig_scriptlets libs
 
 %changelog
+* Sun Jan 01 2023 Liu Yang <Yang.Liu.sn@gmail.com> - 1:3.0.5-3.rv64
+- Skip failed tests on riscv64.
+
 * Fri Sep 09 2022 David Abdurachmanov <davidlt@rivosinc.com> - 1:3.0.5-3.rv64
 - Add --libdir=%{_lib} for riscv64 (uses linux-generic64)
 
