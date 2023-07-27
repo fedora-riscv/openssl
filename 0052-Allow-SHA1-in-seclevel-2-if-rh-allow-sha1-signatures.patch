@@ -1,4 +1,4 @@
-From b9e2912acb72837b2fdef5cd8f96dc4e0d2a8fea Mon Sep 17 00:00:00 2001
+From 033a4a68f259e32ea58e5a9f478f59d7dabe70af Mon Sep 17 00:00:00 2001
 From: Clemens Lang <cllang@redhat.com>
 Date: Tue, 1 Mar 2022 15:44:18 +0100
 Subject: [PATCH 23/38] Allow SHA1 in seclevel 2 if rh-allow-sha1-signatures =
@@ -13,7 +13,7 @@ References: rhbz#2055796
  4 files changed, 79 insertions(+), 18 deletions(-)
 
 diff --git a/crypto/x509/x509_vfy.c b/crypto/x509/x509_vfy.c
-index 9384f1da9bad9e104550ff270d9ae8dc61da073d..859d5caf4529e193336022bc8a4bdd640df26066 100644
+index d19efeaa99..451fa10bf2 100644
 --- a/crypto/x509/x509_vfy.c
 +++ b/crypto/x509/x509_vfy.c
 @@ -25,6 +25,7 @@
@@ -24,7 +24,7 @@ index 9384f1da9bad9e104550ff270d9ae8dc61da073d..859d5caf4529e193336022bc8a4bdd64
  #include "crypto/x509.h"
  #include "x509_local.h"
  
-@@ -3430,14 +3431,30 @@ static int check_sig_level(X509_STORE_CTX *ctx, X509 *cert)
+@@ -3438,14 +3439,30 @@ static int check_sig_level(X509_STORE_CTX *ctx, X509 *cert)
  {
      int secbits = -1;
      int level = ctx->param->auth_level;
@@ -57,10 +57,10 @@ index 9384f1da9bad9e104550ff270d9ae8dc61da073d..859d5caf4529e193336022bc8a4bdd64
      return secbits >= minbits_table[level - 1];
  }
 diff --git a/doc/man5/config.pod b/doc/man5/config.pod
-index f7ac6a743b44c786cf18ccf2ed28105855ceb3ac..f850075d2d0da73e2ab8fc402b1884d3ef6254a8 100644
+index e5a88d11aa..2d5649f90b 100644
 --- a/doc/man5/config.pod
 +++ b/doc/man5/config.pod
-@@ -313,7 +313,12 @@ When set to B<no>, any attempt to create or verify a signature with a SHA1
+@@ -305,7 +305,12 @@ When set to B<no>, any attempt to create or verify a signature with a SHA1
  digest will fail.  For compatibility with older versions of OpenSSL, set this
  option to B<yes>.  This setting also affects TLS, where signature algorithms
  that use SHA1 as digest will no longer be supported if this option is set to
@@ -75,7 +75,7 @@ index f7ac6a743b44c786cf18ccf2ed28105855ceb3ac..f850075d2d0da73e2ab8fc402b1884d3
  =item B<fips_mode> (deprecated)
  
 diff --git a/ssl/t1_lib.c b/ssl/t1_lib.c
-index 89c1dd31c72271b1923ab972e3d3359b6c8e1a03..831e594c00f1c048c9cd920b6c7e62cd6d7a06ed 100644
+index 8bc550ea5b..a9d21a6a96 100644
 --- a/ssl/t1_lib.c
 +++ b/ssl/t1_lib.c
 @@ -20,6 +20,7 @@
@@ -86,7 +86,7 @@ index 89c1dd31c72271b1923ab972e3d3359b6c8e1a03..831e594c00f1c048c9cd920b6c7e62cd
  #include "internal/sslconf.h"
  #include "internal/nelem.h"
  #include "internal/sizes.h"
-@@ -1566,19 +1567,27 @@ int tls12_check_peer_sigalg(SSL *s, uint16_t sig, EVP_PKEY *pkey)
+@@ -1567,19 +1568,27 @@ int tls12_check_peer_sigalg(SSL *s, uint16_t sig, EVP_PKEY *pkey)
          SSLfatal(s, SSL_AD_HANDSHAKE_FAILURE, SSL_R_UNKNOWN_DIGEST);
          return 0;
      }
@@ -127,7 +127,7 @@ index 89c1dd31c72271b1923ab972e3d3359b6c8e1a03..831e594c00f1c048c9cd920b6c7e62cd
      }
      /* Store the sigalg the peer uses */
      s->s3.tmp.peer_sigalg = lu;
-@@ -2116,6 +2125,14 @@ static int tls12_sigalg_allowed(const SSL *s, int op, const SIGALG_LOOKUP *lu)
+@@ -2117,6 +2126,14 @@ static int tls12_sigalg_allowed(const SSL *s, int op, const SIGALG_LOOKUP *lu)
          }
      }
  
@@ -142,7 +142,7 @@ index 89c1dd31c72271b1923ab972e3d3359b6c8e1a03..831e594c00f1c048c9cd920b6c7e62cd
      /* Finally see if security callback allows it */
      secbits = sigalg_security_bits(s->ctx, lu);
      sigalgstr[0] = (lu->sigalg >> 8) & 0xff;
-@@ -2985,6 +3002,8 @@ static int ssl_security_cert_sig(SSL *s, SSL_CTX *ctx, X509 *x, int op)
+@@ -2986,6 +3003,8 @@ static int ssl_security_cert_sig(SSL *s, SSL_CTX *ctx, X509 *x, int op)
  {
      /* Lookup signature algorithm digest */
      int secbits, nid, pknid;
@@ -151,7 +151,7 @@ index 89c1dd31c72271b1923ab972e3d3359b6c8e1a03..831e594c00f1c048c9cd920b6c7e62cd
      /* Don't check signature if self signed */
      if ((X509_get_extension_flags(x) & EXFLAG_SS) != 0)
          return 1;
-@@ -2993,6 +3012,25 @@ static int ssl_security_cert_sig(SSL *s, SSL_CTX *ctx, X509 *x, int op)
+@@ -2994,6 +3013,25 @@ static int ssl_security_cert_sig(SSL *s, SSL_CTX *ctx, X509 *x, int op)
      /* If digest NID not defined use signature NID */
      if (nid == NID_undef)
          nid = pknid;
@@ -178,19 +178,19 @@ index 89c1dd31c72271b1923ab972e3d3359b6c8e1a03..831e594c00f1c048c9cd920b6c7e62cd
          return ssl_security(s, op, secbits, nid, x);
      else
 diff --git a/test/recipes/25-test_verify.t b/test/recipes/25-test_verify.t
-index 2a4c36e86daff04f87ad4726a9fb359d958189bf..309cda877d15ff18f5e492c05372f5c9f1393525 100644
+index f69af793e4..a7481254e1 100644
 --- a/test/recipes/25-test_verify.t
 +++ b/test/recipes/25-test_verify.t
 @@ -29,7 +29,7 @@ sub verify {
      run(app([@args]));
  }
  
--plan tests => 164;
-+plan tests => 163;
+-plan tests => 175;
++plan tests => 174;
  
  # Canonical success
  ok(verify("ee-cert", "sslserver", ["root-cert"], ["ca-cert"]),
-@@ -419,8 +419,9 @@ ok(verify("ee-pss-sha1-cert", "", ["root-cert"], ["ca-cert"], "-auth_level", "0"
+@@ -439,8 +439,9 @@ ok(verify("ee-pss-sha1-cert", "", ["root-cert"], ["ca-cert"], "-auth_level", "0"
  ok(verify("ee-pss-sha256-cert", "", ["root-cert"], ["ca-cert"], ),
      "CA with PSS signature using SHA256");
  
@@ -203,5 +203,5 @@ index 2a4c36e86daff04f87ad4726a9fb359d958189bf..309cda877d15ff18f5e492c05372f5c9
  ok(verify("ee-pss-sha256-cert", "", ["root-cert"], ["ca-cert"], "-auth_level", "2"),
      "PSS signature using SHA256 and auth level 2");
 -- 
-2.39.1
+2.40.1
 
