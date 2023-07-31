@@ -1,7 +1,26 @@
-diff -up ./apps/speed.c.ec-curves ./apps/speed.c
---- ./apps/speed.c.ec-curves	2023-03-14 04:44:12.545437892 +0100
-+++ ./apps/speed.c	2023-03-14 04:48:28.606729067 +0100
-@@ -366,7 +366,7 @@ static double ffdh_results[FFDH_NUM][1];
+From e65f698d59fc71300d3e49492f9ef899b7209e5f Mon Sep 17 00:00:00 2001
+From: rpm-build <rpm-build>
+Date: Mon, 31 Jul 2023 09:41:28 +0200
+Subject: [PATCH 11/35] 0011-Remove-EC-curves.patch
+
+Patch-name: 0011-Remove-EC-curves.patch
+Patch-id: 11
+Patch-status: |
+    # remove unsupported EC curves
+From-dist-git-commit: 9409bc7044cf4b5773639cce20f51399888c45fd
+---
+ apps/speed.c                 |  8 +---
+ crypto/evp/ec_support.c      | 76 ------------------------------------
+ test/acvp_test.inc           |  9 -----
+ test/ecdsatest.h             | 17 --------
+ test/recipes/15-test_genec.t | 27 -------------
+ 5 files changed, 1 insertion(+), 136 deletions(-)
+
+diff --git a/apps/speed.c b/apps/speed.c
+index cace25eda1..d527f12f18 100644
+--- a/apps/speed.c
++++ b/apps/speed.c
+@@ -385,7 +385,7 @@ static double ffdh_results[FFDH_NUM][1];  /* 1 op: derivation */
  #endif /* OPENSSL_NO_DH */
  
  enum ec_curves_t {
@@ -10,7 +29,7 @@ diff -up ./apps/speed.c.ec-curves ./apps/speed.c
  #ifndef OPENSSL_NO_EC2M
      R_EC_K163, R_EC_K233, R_EC_K283, R_EC_K409, R_EC_K571,
      R_EC_B163, R_EC_B233, R_EC_B283, R_EC_B409, R_EC_B571,
-@@ -376,8 +376,6 @@ enum ec_curves_t {
+@@ -395,8 +395,6 @@ enum ec_curves_t {
  };
  /* list of ecdsa curves */
  static const OPT_PAIR ecdsa_choices[ECDSA_NUM] = {
@@ -19,7 +38,7 @@ diff -up ./apps/speed.c.ec-curves ./apps/speed.c
      {"ecdsap224", R_EC_P224},
      {"ecdsap256", R_EC_P256},
      {"ecdsap384", R_EC_P384},
-@@ -404,8 +402,6 @@ static const OPT_PAIR ecdsa_choices[ECDS
+@@ -423,8 +421,6 @@ static const OPT_PAIR ecdsa_choices[ECDSA_NUM] = {
  enum { R_EC_X25519 = ECDSA_NUM, R_EC_X448, EC_NUM };
  /* list of ecdh curves, extension of |ecdsa_choices| list above */
  static const OPT_PAIR ecdh_choices[EC_NUM] = {
@@ -28,7 +47,7 @@ diff -up ./apps/speed.c.ec-curves ./apps/speed.c
      {"ecdhp224", R_EC_P224},
      {"ecdhp256", R_EC_P256},
      {"ecdhp384", R_EC_P384},
-@@ -1422,8 +1418,6 @@ int speed_main(int argc, char **argv)
+@@ -1442,8 +1438,6 @@ int speed_main(int argc, char **argv)
       */
      static const EC_CURVE ec_curves[EC_NUM] = {
          /* Prime Curves */
@@ -37,9 +56,10 @@ diff -up ./apps/speed.c.ec-curves ./apps/speed.c
          {"nistp224", NID_secp224r1, 224},
          {"nistp256", NID_X9_62_prime256v1, 256},
          {"nistp384", NID_secp384r1, 384},
-diff -up ./crypto/evp/ec_support.c.ec-curves ./crypto/evp/ec_support.c
---- ./crypto/evp/ec_support.c.ec-curves	2023-03-14 06:22:41.542310442 +0100
-+++ ./crypto/evp/ec_support.c	2023-03-21 11:24:18.378451683 +0100
+diff --git a/crypto/evp/ec_support.c b/crypto/evp/ec_support.c
+index 1ec10143d2..8fe774140f 100644
+--- a/crypto/evp/ec_support.c
++++ b/crypto/evp/ec_support.c
 @@ -20,89 +20,15 @@ typedef struct ec_name2nid_st {
  static const EC_NAME2NID curve_list[] = {
      /* prime field curves */
@@ -130,7 +150,7 @@ diff -up ./crypto/evp/ec_support.c.ec-curves ./crypto/evp/ec_support.c
      {"brainpoolP256r1", NID_brainpoolP256r1 },
      {"brainpoolP256t1", NID_brainpoolP256t1 },
      {"brainpoolP320r1", NID_brainpoolP320r1 },
-@@ -111,8 +37,6 @@ static const EC_NAME2NID curve_list[] =
+@@ -111,8 +37,6 @@ static const EC_NAME2NID curve_list[] = {
      {"brainpoolP384t1", NID_brainpoolP384t1 },
      {"brainpoolP512r1", NID_brainpoolP512r1 },
      {"brainpoolP512t1", NID_brainpoolP512t1 },
@@ -139,13 +159,15 @@ diff -up ./crypto/evp/ec_support.c.ec-curves ./crypto/evp/ec_support.c
  };
  
  const char *OSSL_EC_curve_nid2name(int nid)
-diff -up ./test/acvp_test.inc.ec-curves ./test/acvp_test.inc
---- ./test/acvp_test.inc.ec-curves	2023-03-14 06:38:20.563712586 +0100
-+++ ./test/acvp_test.inc	2023-03-14 06:39:01.631080059 +0100
-@@ -212,15 +212,6 @@ static const unsigned char ecdsa_sigver_
+diff --git a/test/acvp_test.inc b/test/acvp_test.inc
+index ad11d3ae1e..894a0bff9d 100644
+--- a/test/acvp_test.inc
++++ b/test/acvp_test.inc
+@@ -211,15 +211,6 @@ static const unsigned char ecdsa_sigver_s1[] = {
+     0xB1, 0xAC,
  };
  static const struct ecdsa_sigver_st ecdsa_sigver_data[] = {
-     {
+-    {
 -        "SHA-1",
 -        "P-192",
 -        ITM(ecdsa_sigver_msg0),
@@ -154,13 +176,13 @@ diff -up ./test/acvp_test.inc.ec-curves ./test/acvp_test.inc
 -        ITM(ecdsa_sigver_s0),
 -        PASS,
 -    },
--    {
+     {
          "SHA2-512",
          "P-521",
-         ITM(ecdsa_sigver_msg1),
-diff -up ./test/ecdsatest.h.ec-curves ./test/ecdsatest.h
---- ./test/ecdsatest.h.ec-curves	2023-03-14 04:49:16.148154472 +0100
-+++ ./test/ecdsatest.h	2023-03-14 04:51:01.376096037 +0100
+diff --git a/test/ecdsatest.h b/test/ecdsatest.h
+index 63fe319025..06b5c0aac5 100644
+--- a/test/ecdsatest.h
++++ b/test/ecdsatest.h
 @@ -32,23 +32,6 @@ typedef struct {
  } ecdsa_cavs_kat_t;
  
@@ -185,10 +207,11 @@ diff -up ./test/ecdsatest.h.ec-curves ./test/ecdsatest.h
      /* prime KATs from NIST CAVP */
      {NID_secp224r1, NID_sha224,
       "699325d6fc8fbbb4981a6ded3c3a54ad2e4e3db8a5669201912064c64e700c139248cdc1"
-diff -up ./test/recipes/15-test_genec.t.ec-curves ./test/recipes/15-test_genec.t
---- ./test/recipes/15-test_genec.t.ec-curves	2023-03-14 04:51:45.215488277 +0100
-+++ ./test/recipes/15-test_genec.t	2023-03-21 11:26:58.613885435 +0100
-@@ -41,37 +41,11 @@ plan skip_all => "This test is unsupport
+diff --git a/test/recipes/15-test_genec.t b/test/recipes/15-test_genec.t
+index 2dfed387ca..c733b68f83 100644
+--- a/test/recipes/15-test_genec.t
++++ b/test/recipes/15-test_genec.t
+@@ -41,37 +41,11 @@ plan skip_all => "This test is unsupported in a no-ec build"
      if disabled("ec");
  
  my @prime_curves = qw(
@@ -234,3 +257,6 @@ diff -up ./test/recipes/15-test_genec.t.ec-curves ./test/recipes/15-test_genec.t
      P-224
      P-256
      P-384
+-- 
+2.41.0
+

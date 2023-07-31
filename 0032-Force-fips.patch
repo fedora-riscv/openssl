@@ -1,6 +1,21 @@
-diff -up openssl-3.0.1/crypto/provider_conf.c.fipsact openssl-3.0.1/crypto/provider_conf.c
---- openssl-3.0.1/crypto/provider_conf.c.fipsact	2022-05-12 12:44:31.199034948 +0200
-+++ openssl-3.0.1/crypto/provider_conf.c	2022-05-12 12:49:17.468318373 +0200
+From 8c6dffe2347fc801a2b285d79dd99b8739414bc3 Mon Sep 17 00:00:00 2001
+From: rpm-build <rpm-build>
+Date: Mon, 31 Jul 2023 09:41:28 +0200
+Subject: [PATCH 16/35] 0032-Force-fips.patch
+
+Patch-name: 0032-Force-fips.patch
+Patch-id: 32
+Patch-status: |
+    # We load FIPS provider and set FIPS properties implicitly
+From-dist-git-commit: 9409bc7044cf4b5773639cce20f51399888c45fd
+---
+ crypto/provider_conf.c | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
+
+diff --git a/crypto/provider_conf.c b/crypto/provider_conf.c
+index 058fb58837..ad0b29c954 100644
+--- a/crypto/provider_conf.c
++++ b/crypto/provider_conf.c
 @@ -10,6 +10,7 @@
  #include <string.h>
  #include <openssl/trace.h>
@@ -9,7 +24,7 @@ diff -up openssl-3.0.1/crypto/provider_conf.c.fipsact openssl-3.0.1/crypto/provi
  #include <openssl/conf.h>
  #include <openssl/safestack.h>
  #include <openssl/provider.h>
-@@ -216,7 +176,7 @@ static int provider_conf_load(OSSL_LIB_C
+@@ -169,7 +170,7 @@ static int provider_conf_activate(OSSL_LIB_CTX *libctx, const char *name,
          if (path != NULL)
              ossl_provider_set_module_path(prov, path);
  
@@ -18,7 +33,7 @@ diff -up openssl-3.0.1/crypto/provider_conf.c.fipsact openssl-3.0.1/crypto/provi
  
          if (ok) {
              if (!ossl_provider_activate(prov, 1, 0)) {
-@@ -306,6 +317,16 @@ static int provider_conf_init(CONF_IMODU
+@@ -309,6 +310,16 @@ static int provider_conf_init(CONF_IMODULE *md, const CONF *cnf)
              return 0;
      }
  
@@ -35,3 +50,6 @@ diff -up openssl-3.0.1/crypto/provider_conf.c.fipsact openssl-3.0.1/crypto/provi
      return 1;
  }
  
+-- 
+2.41.0
+

@@ -1,7 +1,24 @@
-diff -up openssl-3.0.1/crypto/dh/dh_key.c.fips3 openssl-3.0.1/crypto/dh/dh_key.c
---- openssl-3.0.1/crypto/dh/dh_key.c.fips3	2022-07-18 16:01:41.159543735 +0200
-+++ openssl-3.0.1/crypto/dh/dh_key.c	2022-07-18 16:24:30.251388248 +0200
-@@ -43,6 +43,9 @@ int ossl_dh_compute_key(unsigned char *k
+From bdf751d87be5dfb3164264ebcdbc0c0374d3eabf Mon Sep 17 00:00:00 2001
+From: rpm-build <rpm-build>
+Date: Mon, 31 Jul 2023 09:41:28 +0200
+Subject: [PATCH 20/35] 0044-FIPS-140-3-keychecks.patch
+
+Patch-name: 0044-FIPS-140-3-keychecks.patch
+Patch-id: 44
+Patch-status: |
+    # Extra public/private key checks required by FIPS-140-3
+From-dist-git-commit: 9409bc7044cf4b5773639cce20f51399888c45fd
+---
+ crypto/dh/dh_key.c                            | 28 ++++++++++++
+ crypto/rsa/rsa_gen.c                          | 44 ++++++++-----------
+ .../implementations/exchange/ecdh_exch.c      | 19 ++++++++
+ 3 files changed, 65 insertions(+), 26 deletions(-)
+
+diff --git a/crypto/dh/dh_key.c b/crypto/dh/dh_key.c
+index 4e9705beef..cb9e641f54 100644
+--- a/crypto/dh/dh_key.c
++++ b/crypto/dh/dh_key.c
+@@ -43,6 +43,9 @@ int ossl_dh_compute_key(unsigned char *key, const BIGNUM *pub_key, DH *dh)
      BN_MONT_CTX *mont = NULL;
      BIGNUM *z = NULL, *pminus1;
      int ret = -1;
@@ -11,7 +28,7 @@ diff -up openssl-3.0.1/crypto/dh/dh_key.c.fips3 openssl-3.0.1/crypto/dh/dh_key.c
  
      if (BN_num_bits(dh->params.p) > OPENSSL_DH_MAX_MODULUS_BITS) {
          ERR_raise(ERR_LIB_DH, DH_R_MODULUS_TOO_LARGE);
-@@ -54,6 +57,13 @@ int ossl_dh_compute_key(unsigned char *k
+@@ -54,6 +57,13 @@ int ossl_dh_compute_key(unsigned char *key, const BIGNUM *pub_key, DH *dh)
          return 0;
      }
  
@@ -59,39 +76,10 @@ diff -up openssl-3.0.1/crypto/dh/dh_key.c.fips3 openssl-3.0.1/crypto/dh/dh_key.c
      dh->dirty_cnt++;
      ok = 1;
   err:
-diff -up openssl-3.0.1/crypto/ec/ec_key.c.fips3 openssl-3.0.1/crypto/ec/ec_key.c
-diff -up openssl-3.0.1/providers/implementations/exchange/ecdh_exch.c.fips3 openssl-3.0.1/providers/implementations/exchange/ecdh_exch.c
---- openssl-3.0.1/providers/implementations/exchange/ecdh_exch.c.fips3	2022-07-25 13:42:46.814952053 +0200
-+++ openssl-3.0.1/providers/implementations/exchange/ecdh_exch.c	2022-07-25 13:52:12.292065706 +0200
-@@ -488,6 +488,25 @@ int ecdh_plain_derive(void *vpecdhctx, u
-     }
- 
-     ppubkey = EC_KEY_get0_public_key(pecdhctx->peerk);
-+#ifdef FIPS_MODULE
-+    {
-+        BN_CTX *bn_ctx = BN_CTX_new_ex(ossl_ec_key_get_libctx(privk));
-+        int check = 0;
-+
-+        if (bn_ctx == NULL) {
-+            ERR_raise(ERR_LIB_PROV, ERR_R_MALLOC_FAILURE);
-+            goto end;
-+        }
-+
-+        check = ossl_ec_key_public_check(pecdhctx->peerk, bn_ctx);
-+        BN_CTX_free(bn_ctx);
-+
-+        if (check <= 0) {
-+            ERR_raise(ERR_LIB_PROV, EC_R_INVALID_PEER_KEY);
-+            goto end;
-+        }
-+    }
-+#endif
- 
-     retlen = ECDH_compute_key(secret, size, ppubkey, privk, NULL);
- 
-diff -up openssl-3.0.1/crypto/rsa/rsa_gen.c.fips3 openssl-3.0.1/crypto/rsa/rsa_gen.c
---- openssl-3.0.1/crypto/rsa/rsa_gen.c.fips3	2022-07-25 17:02:17.807271297 +0200
-+++ openssl-3.0.1/crypto/rsa/rsa_gen.c	2022-07-25 17:18:24.931959649 +0200
+diff --git a/crypto/rsa/rsa_gen.c b/crypto/rsa/rsa_gen.c
+index e0d139d312..de9cedb64b 100644
+--- a/crypto/rsa/rsa_gen.c
++++ b/crypto/rsa/rsa_gen.c
 @@ -23,6 +23,7 @@
  #include <time.h>
  #include "internal/cryptlib.h"
@@ -100,7 +88,7 @@ diff -up openssl-3.0.1/crypto/rsa/rsa_gen.c.fips3 openssl-3.0.1/crypto/rsa/rsa_g
  #include <openssl/self_test.h>
  #include "prov/providercommon.h"
  #include "rsa_local.h"
-@@ -476,52 +476,43 @@ static int rsa_keygen(OSSL_LIB_CTX *libc
+@@ -478,52 +479,43 @@ static int rsa_keygen(OSSL_LIB_CTX *libctx, RSA *rsa, int bits, int primes,
  static int rsa_keygen_pairwise_test(RSA *rsa, OSSL_CALLBACK *cb, void *cbarg)
  {
      int ret = 0;
@@ -128,13 +116,13 @@ diff -up openssl-3.0.1/crypto/rsa/rsa_gen.c.fips3 openssl-3.0.1/crypto/rsa/rsa_g
                             OSSL_SELF_TEST_DESC_PCT_RSA_PKCS1);
  
 -    ciphertxt_len = RSA_size(rsa);
-+    signature_len = RSA_size(rsa);
 -    /*
 -     * RSA_private_encrypt() and RSA_private_decrypt() requires the 'to'
 -     * parameter to be a maximum of RSA_size() - allocate space for both.
 -     */
 -    ciphertxt = OPENSSL_zalloc(ciphertxt_len * 2);
 -    if (ciphertxt == NULL)
++    signature_len = RSA_size(rsa);
 +    signature = OPENSSL_zalloc(signature_len);
 +    if (signature == NULL)
          goto err;
@@ -170,3 +158,36 @@ diff -up openssl-3.0.1/crypto/rsa/rsa_gen.c.fips3 openssl-3.0.1/crypto/rsa/rsa_g
  
      return ret;
  }
+diff --git a/providers/implementations/exchange/ecdh_exch.c b/providers/implementations/exchange/ecdh_exch.c
+index 43caedb6df..73873f9758 100644
+--- a/providers/implementations/exchange/ecdh_exch.c
++++ b/providers/implementations/exchange/ecdh_exch.c
+@@ -489,6 +489,25 @@ int ecdh_plain_derive(void *vpecdhctx, unsigned char *secret,
+     }
+ 
+     ppubkey = EC_KEY_get0_public_key(pecdhctx->peerk);
++#ifdef FIPS_MODULE
++    {
++        BN_CTX *bn_ctx = BN_CTX_new_ex(ossl_ec_key_get_libctx(privk));
++        int check = 0;
++
++        if (bn_ctx == NULL) {
++            ERR_raise(ERR_LIB_PROV, ERR_R_MALLOC_FAILURE);
++            goto end;
++        }
++
++        check = ossl_ec_key_public_check(pecdhctx->peerk, bn_ctx);
++        BN_CTX_free(bn_ctx);
++
++        if (check <= 0) {
++            ERR_raise(ERR_LIB_PROV, EC_R_INVALID_PEER_KEY);
++            goto end;
++        }
++    }
++#endif
+ 
+     retlen = ECDH_compute_key(secret, size, ppubkey, privk, NULL);
+ 
+-- 
+2.41.0
+

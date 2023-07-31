@@ -40,103 +40,84 @@ Source7: renew-dummy-cert
 Source9: configuration-switch.h
 Source10: configuration-prefix.h
 Source14: 0025-for-tests.patch
-
-# Patches exported from source git
-# Aarch64 and ppc64le use lib64
-Patch1: 0001-Aarch64-and-ppc64le-use-lib64.patch
-# Use more general default values in openssl.cnf
-Patch2: 0002-Use-more-general-default-values-in-openssl.cnf.patch
-# Do not install html docs
-Patch3: 0003-Do-not-install-html-docs.patch
-# Override default paths for the CA directory tree
-Patch4: 0004-Override-default-paths-for-the-CA-directory-tree.patch
-# apps/ca: fix md option help text
-Patch5: 0005-apps-ca-fix-md-option-help-text.patch
-# Disable signature verification with totally unsafe hash algorithms
-Patch6: 0006-Disable-signature-verification-with-totally-unsafe-h.patch
-# Add support for PROFILE=SYSTEM system default cipherlist
-Patch7: 0007-Add-support-for-PROFILE-SYSTEM-system-default-cipher.patch
-# Add FIPS_mode() compatibility macro
-Patch8: 0008-Add-FIPS_mode-compatibility-macro.patch
-# Add check to see if fips flag is enabled in kernel
-Patch9: 0009-Add-Kernel-FIPS-mode-flag-support.patch
-# Instead of replacing ectest.c and ec_curve.c, add the changes as a patch so
-# that new modifications made to these files by upstream are not lost. 
-Patch10: 0010-Add-changes-to-ectest-and-eccurve.patch
-# remove unsupported EC curves
-Patch11: 0011-Remove-EC-curves.patch
-# Disable explicit EC curves
-# https://bugzilla.redhat.com/show_bug.cgi?id=2066412
-Patch12: 0012-Disable-explicit-ec.patch
-#Skipped tests from former 0011-Remove-EC-curves.patch
-Patch13: 0013-skipped-tests-EC-curves.patch
-# Instructions to load legacy provider in openssl.cnf
-Patch24: 0024-load-legacy-prov.patch
-# Tmp: test name change
-Patch31: 0031-tmp-Fix-test-names.patch
-# We load FIPS provider and set FIPS properties implicitly
-Patch32: 0032-Force-fips.patch
-# Embed HMAC into the fips.so
-Patch33: 0033-FIPS-embed-hmac.patch
-# Comment out fipsinstall command-line utility
-Patch34: 0034.fipsinstall_disable.patch
-# Skip unavailable algorithms running `openssl speed`
-Patch35: 0035-speed-skip-unavailable-dgst.patch
-# Extra public/private key checks required by FIPS-140-3
-Patch44: 0044-FIPS-140-3-keychecks.patch
-# Minimize fips services
-Patch45: 0045-FIPS-services-minimize.patch
-# Execute KATS before HMAC verification
-Patch47: 0047-FIPS-early-KATS.patch
-%if 0%{?rhel}
-# Selectively disallow SHA1 signatures
-Patch49: 0049-Selectively-disallow-SHA1-signatures.patch
-%else
-# Selectively disallow SHA1 signatures rhbz#2070977
-Patch49: 0049-Allow-disabling-of-SHA1-signatures.patch
-%endif
-%if 0%{?rhel}
-# Allow SHA1 in seclevel 2 if rh-allow-sha1-signatures = yes
-Patch52: 0052-Allow-SHA1-in-seclevel-2-if-rh-allow-sha1-signatures.patch
-%else
-# Support SHA1 in TLS in LEGACY crypto-policy (which is SECLEVEL=1)
-Patch52: 0052-Allow-SHA1-in-seclevel-1-if-rh-allow-sha1-signatures.patch
-%endif
-%if 0%{?rhel}
-# no USDT probe instrumentation required
-%else
-# Instrument with USDT probes related to SHA-1 deprecation
-#Patch53: 0053-Add-SHA1-probes.patch
-%endif
-# https://github.com/openssl/openssl/pull/18103
-# The patch is incorporated in 3.0.3 but we provide this function since 3.0.1
-# so the patch should persist
-Patch56: 0056-strcasecmp.patch
-# https://github.com/openssl/openssl/pull/18175
-# Patch57: 0057-strcasecmp-fix.patch
-# https://bugzilla.redhat.com/show_bug.cgi?id=2053289
-Patch58: 0058-FIPS-limit-rsa-encrypt.patch
-# https://bugzilla.redhat.com/show_bug.cgi?id=2087147
-Patch61: 0061-Deny-SHA-1-signature-verification-in-FIPS-provider.patch
-Patch62: 0062-fips-Expose-a-FIPS-indicator.patch
-# https://bugzilla.redhat.com/show_bug.cgi?id=2102535
-Patch73: 0073-FIPS-Use-OAEP-in-KATs-support-fixed-OAEP-seed.patch
-# https://bugzilla.redhat.com/show_bug.cgi?id=2102535
-%if 0%{?rhel}
-Patch74: 0074-FIPS-Use-digest_sign-digest_verify-in-self-test-eln.patch
-%else
-Patch74: 0074-FIPS-Use-digest_sign-digest_verify-in-self-test.patch
-%endif
-# https://bugzilla.redhat.com/show_bug.cgi?id=2102535
-Patch75: 0075-FIPS-Use-FFDHE2048-in-self-test.patch
-# Downstream only. Reseed DRBG using getrandom(GRND_RANDOM)
-# https://bugzilla.redhat.com/show_bug.cgi?id=2102541
-Patch76: 0076-FIPS-140-3-DRBG.patch
-# https://bugzilla.redhat.com/show_bug.cgi?id=2102542
-Patch77: 0077-FIPS-140-3-zeroization.patch
-# https://bugzilla.redhat.com/show_bug.cgi?id=2114772
-Patch78: 0078-Add-FIPS-indicator-parameter-to-HKDF.patch
-# https://github.com/openssl/openssl/pull/13817
+# # Patches exported from source git
+# # Aarch64 and ppc64le use lib64
+Patch1:   0001-Aarch64-and-ppc64le-use-lib64.patch
+# # Use more general default values in openssl.cnf
+Patch2:   0002-Use-more-general-default-values-in-openssl.cnf.patch
+# # Do not install html docs
+Patch3:   0003-Do-not-install-html-docs.patch
+# # Override default paths for the CA directory tree
+Patch4:   0004-Override-default-paths-for-the-CA-directory-tree.patch
+# # apps/ca: fix md option help text
+Patch5:   0005-apps-ca-fix-md-option-help-text.patch
+# # Disable signature verification with totally unsafe hash algorithms
+Patch6:   0006-Disable-signature-verification-with-totally-unsafe-h.patch
+# # Add support for PROFILE=SYSTEM system default cipherlist
+Patch7:   0007-Add-support-for-PROFILE-SYSTEM-system-default-cipher.patch
+# # Add FIPS_mode() compatibility macro
+Patch8:   0008-Add-FIPS_mode-compatibility-macro.patch
+# # Add check to see if fips flag is enabled in kernel
+Patch9:   0009-Add-Kernel-FIPS-mode-flag-support.patch
+# # Instead of replacing ectest.c and ec_curve.c, add the changes as a patch so
+# # that new modifications made to these files by upstream are not lost.
+Patch10:  0010-Add-changes-to-ectest-and-eccurve.patch
+# # remove unsupported EC curves
+Patch11:  0011-Remove-EC-curves.patch
+# # Disable explicit EC curves
+# # https://bugzilla.redhat.com/show_bug.cgi?id=2066412
+Patch12:  0012-Disable-explicit-ec.patch
+# # Skipped tests from former 0011-Remove-EC-curves.patch
+Patch13:  0013-skipped-tests-EC-curves.patch
+# # Instructions to load legacy provider in openssl.cnf
+Patch24:  0024-load-legacy-prov.patch
+# # Tmp: test name change
+Patch31:  0031-tmp-Fix-test-names.patch
+# # We load FIPS provider and set FIPS properties implicitly
+Patch32:  0032-Force-fips.patch
+# # Embed HMAC into the fips.so
+Patch33:  0033-FIPS-embed-hmac.patch
+# # Comment out fipsinstall command-line utility
+Patch34:  0034.fipsinstall_disable.patch
+# # Skip unavailable algorithms running `openssl speed`
+Patch35:  0035-speed-skip-unavailable-dgst.patch
+# # Extra public/private key checks required by FIPS-140-3
+Patch44:  0044-FIPS-140-3-keychecks.patch
+# # Minimize fips services
+Patch45:  0045-FIPS-services-minimize.patch
+# # Execute KATS before HMAC verification
+Patch47:  0047-FIPS-early-KATS.patch
+# # Selectively disallow SHA1 signatures rhbz#2070977
+Patch49:  0049-Allow-disabling-of-SHA1-signatures.patch
+# # Support SHA1 in TLS in LEGACY crypto-policy (which is SECLEVEL=1)
+Patch52:  0052-Allow-SHA1-in-seclevel-1-if-rh-allow-sha1-signatures.patch
+# # https://github.com/openssl/openssl/pull/18103
+# # The patch is incorporated in 3.0.3 but we provide this function since 3.0.1
+# # so the patch should persist
+Patch56:  0056-strcasecmp.patch
+# # https://github.com/openssl/openssl/pull/18175
+# # Patch57: 0057-strcasecmp-fix.patch
+# # https://bugzilla.redhat.com/show_bug.cgi?id=2053289
+Patch58:  0058-FIPS-limit-rsa-encrypt.patch
+# # https://bugzilla.redhat.com/show_bug.cgi?id=2087147
+Patch61:  0061-Deny-SHA-1-signature-verification-in-FIPS-provider.patch
+# 0062-fips-Expose-a-FIPS-indicator.patch
+Patch62:  0062-fips-Expose-a-FIPS-indicator.patch
+# # https://bugzilla.redhat.com/show_bug.cgi?id=2102535
+Patch73:  0073-FIPS-Use-OAEP-in-KATs-support-fixed-OAEP-seed.patch
+# [PATCH 30/35] 
+#  0074-FIPS-Use-digest_sign-digest_verify-in-self-test.patch
+Patch74:  0074-FIPS-Use-digest_sign-digest_verify-in-self-test.patch
+# # https://bugzilla.redhat.com/show_bug.cgi?id=2102535
+Patch75:  0075-FIPS-Use-FFDHE2048-in-self-test.patch
+# # Downstream only. Reseed DRBG using getrandom(GRND_RANDOM)
+# # https://bugzilla.redhat.com/show_bug.cgi?id=2102541
+Patch76:  0076-FIPS-140-3-DRBG.patch
+# # https://bugzilla.redhat.com/show_bug.cgi?id=2102542
+Patch77:  0077-FIPS-140-3-zeroization.patch
+# # https://bugzilla.redhat.com/show_bug.cgi?id=2114772
+Patch78:  0078-Add-FIPS-indicator-parameter-to-HKDF.patch
+# # https://github.com/openssl/openssl/pull/13817
 Patch100: 0100-RSA-PKCS15-implicit-rejection.patch
 
 License: ASL 2.0

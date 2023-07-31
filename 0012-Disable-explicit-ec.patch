@@ -1,7 +1,27 @@
-diff -up openssl-3.0.1/crypto/ec/ec_asn1.c.disable_explicit_ec openssl-3.0.1/crypto/ec/ec_asn1.c
---- openssl-3.0.1/crypto/ec/ec_asn1.c.disable_explicit_ec	2022-03-22 13:10:45.718077845 +0100
-+++ openssl-3.0.1/crypto/ec/ec_asn1.c	2022-03-22 13:12:46.626599016 +0100
-@@ -895,6 +895,12 @@ EC_GROUP *d2i_ECPKParameters(EC_GROUP **
+From 91bdd9b816b22bc1464ec323f3272b866b24114d Mon Sep 17 00:00:00 2001
+From: rpm-build <rpm-build>
+Date: Mon, 31 Jul 2023 09:41:28 +0200
+Subject: [PATCH 12/35] 0012-Disable-explicit-ec.patch
+
+Patch-name: 0012-Disable-explicit-ec.patch
+Patch-id: 12
+Patch-status: |
+    # Disable explicit EC curves
+    # https://bugzilla.redhat.com/show_bug.cgi?id=2066412
+From-dist-git-commit: 9409bc7044cf4b5773639cce20f51399888c45fd
+---
+ crypto/ec/ec_asn1.c                           | 11 ++++++++++
+ crypto/ec/ec_lib.c                            |  6 +++++
+ test/ectest.c                                 | 22 ++++++++++---------
+ test/endecode_test.c                          | 20 ++++++++---------
+ .../30-test_evp_data/evppkey_ecdsa.txt        | 12 ----------
+ 5 files changed, 39 insertions(+), 32 deletions(-)
+
+diff --git a/crypto/ec/ec_asn1.c b/crypto/ec/ec_asn1.c
+index 7a0b35a594..d19d57344e 100644
+--- a/crypto/ec/ec_asn1.c
++++ b/crypto/ec/ec_asn1.c
+@@ -905,6 +905,12 @@ EC_GROUP *d2i_ECPKParameters(EC_GROUP **a, const unsigned char **in, long len)
      if (params->type == ECPKPARAMETERS_TYPE_EXPLICIT)
          group->decoded_from_explicit_params = 1;
  
@@ -14,7 +34,7 @@ diff -up openssl-3.0.1/crypto/ec/ec_asn1.c.disable_explicit_ec openssl-3.0.1/cry
      if (a) {
          EC_GROUP_free(*a);
          *a = group;
-@@ -954,6 +959,11 @@ EC_KEY *d2i_ECPrivateKey(EC_KEY **a, con
+@@ -964,6 +970,11 @@ EC_KEY *d2i_ECPrivateKey(EC_KEY **a, const unsigned char **in, long len)
          goto err;
      }
  
@@ -26,10 +46,11 @@ diff -up openssl-3.0.1/crypto/ec/ec_asn1.c.disable_explicit_ec openssl-3.0.1/cry
      ret->version = priv_key->version;
  
      if (priv_key->privateKey) {
-diff -up openssl-3.0.9/crypto/ec/ec_lib.c.noec openssl-3.0.9/crypto/ec/ec_lib.c
---- openssl-3.0.9/crypto/ec/ec_lib.c.noec	2023-07-27 10:32:52.870910095 +0200
-+++ openssl-3.0.9/crypto/ec/ec_lib.c	2023-07-27 10:35:18.029151181 +0200
-@@ -1728,6 +1728,11 @@ EC_GROUP *EC_GROUP_new_from_params(const
+diff --git a/crypto/ec/ec_lib.c b/crypto/ec/ec_lib.c
+index a84e088c19..6c37bf78ae 100644
+--- a/crypto/ec/ec_lib.c
++++ b/crypto/ec/ec_lib.c
+@@ -1724,6 +1724,11 @@ EC_GROUP *EC_GROUP_new_from_params(const OSSL_PARAM params[],
          goto err;
      }
      if (named_group == group) {
@@ -41,7 +62,7 @@ diff -up openssl-3.0.9/crypto/ec/ec_lib.c.noec openssl-3.0.9/crypto/ec/ec_lib.c
          /*
           * If we did not find a named group then the encoding should be explicit
           * if it was specified
-@@ -1743,6 +1748,7 @@ EC_GROUP *EC_GROUP_new_from_params(const
+@@ -1739,6 +1744,7 @@ EC_GROUP *EC_GROUP_new_from_params(const OSSL_PARAM params[],
              goto err;
          }
          EC_GROUP_set_asn1_flag(group, OPENSSL_EC_EXPLICIT_CURVE);
@@ -49,104 +70,11 @@ diff -up openssl-3.0.9/crypto/ec/ec_lib.c.noec openssl-3.0.9/crypto/ec/ec_lib.c
      } else {
          EC_GROUP_free(group);
          group = named_group;
-diff -up openssl-3.0.1/test/endecode_test.c.disable_explicit_ec openssl-3.0.1/test/endecode_test.c
---- openssl-3.0.1/test/endecode_test.c.disable_explicit_ec	2022-03-21 16:55:46.005558779 +0100
-+++ openssl-3.0.1/test/endecode_test.c	2022-03-21 16:56:12.636792762 +0100
-@@ -57,7 +57,7 @@ static BN_CTX *bnctx = NULL;
- static OSSL_PARAM_BLD *bld_prime_nc = NULL;
- static OSSL_PARAM_BLD *bld_prime = NULL;
- static OSSL_PARAM *ec_explicit_prime_params_nc = NULL;
--static OSSL_PARAM *ec_explicit_prime_params_explicit = NULL;
-+/*static OSSL_PARAM *ec_explicit_prime_params_explicit = NULL;*/
- 
- # ifndef OPENSSL_NO_EC2M
- static OSSL_PARAM_BLD *bld_tri_nc = NULL;
-@@ -990,9 +990,9 @@ IMPLEMENT_TEST_SUITE_LEGACY(EC, "EC")
- DOMAIN_KEYS(ECExplicitPrimeNamedCurve);
- IMPLEMENT_TEST_SUITE(ECExplicitPrimeNamedCurve, "EC", 1)
- IMPLEMENT_TEST_SUITE_LEGACY(ECExplicitPrimeNamedCurve, "EC")
--DOMAIN_KEYS(ECExplicitPrime2G);
--IMPLEMENT_TEST_SUITE(ECExplicitPrime2G, "EC", 0)
--IMPLEMENT_TEST_SUITE_LEGACY(ECExplicitPrime2G, "EC")
-+/*DOMAIN_KEYS(ECExplicitPrime2G);*/
-+/*IMPLEMENT_TEST_SUITE(ECExplicitPrime2G, "EC", 0)*/
-+/*IMPLEMENT_TEST_SUITE_LEGACY(ECExplicitPrime2G, "EC")*/
- # ifndef OPENSSL_NO_EC2M
- DOMAIN_KEYS(ECExplicitTriNamedCurve);
- IMPLEMENT_TEST_SUITE(ECExplicitTriNamedCurve, "EC", 1)
-@@ -1318,7 +1318,7 @@ int setup_tests(void)
-         || !create_ec_explicit_prime_params_namedcurve(bld_prime_nc)
-         || !create_ec_explicit_prime_params(bld_prime)
-         || !TEST_ptr(ec_explicit_prime_params_nc = OSSL_PARAM_BLD_to_param(bld_prime_nc))
--        || !TEST_ptr(ec_explicit_prime_params_explicit = OSSL_PARAM_BLD_to_param(bld_prime))
-+/*        || !TEST_ptr(ec_explicit_prime_params_explicit = OSSL_PARAM_BLD_to_param(bld_prime))*/
- # ifndef OPENSSL_NO_EC2M
-         || !TEST_ptr(bld_tri_nc = OSSL_PARAM_BLD_new())
-         || !TEST_ptr(bld_tri = OSSL_PARAM_BLD_new())
-@@ -1346,7 +1346,7 @@ int setup_tests(void)
-     TEST_info("Generating EC keys...");
-     MAKE_DOMAIN_KEYS(EC, "EC", EC_params);
-     MAKE_DOMAIN_KEYS(ECExplicitPrimeNamedCurve, "EC", ec_explicit_prime_params_nc);
--    MAKE_DOMAIN_KEYS(ECExplicitPrime2G, "EC", ec_explicit_prime_params_explicit);
-+/*    MAKE_DOMAIN_KEYS(ECExplicitPrime2G, "EC", ec_explicit_prime_params_explicit);*/
- # ifndef OPENSSL_NO_EC2M
-     MAKE_DOMAIN_KEYS(ECExplicitTriNamedCurve, "EC", ec_explicit_tri_params_nc);
-     MAKE_DOMAIN_KEYS(ECExplicitTri2G, "EC", ec_explicit_tri_params_explicit);
-@@ -1389,8 +1389,8 @@ int setup_tests(void)
-         ADD_TEST_SUITE_LEGACY(EC);
-         ADD_TEST_SUITE(ECExplicitPrimeNamedCurve);
-         ADD_TEST_SUITE_LEGACY(ECExplicitPrimeNamedCurve);
--        ADD_TEST_SUITE(ECExplicitPrime2G);
--        ADD_TEST_SUITE_LEGACY(ECExplicitPrime2G);
-+/*        ADD_TEST_SUITE(ECExplicitPrime2G);*/
-+/*        ADD_TEST_SUITE_LEGACY(ECExplicitPrime2G);*/
- # ifndef OPENSSL_NO_EC2M
-         ADD_TEST_SUITE(ECExplicitTriNamedCurve);
-         ADD_TEST_SUITE_LEGACY(ECExplicitTriNamedCurve);
-@@ -1427,7 +1427,7 @@ void cleanup_tests(void)
- {
- #ifndef OPENSSL_NO_EC
-     OSSL_PARAM_free(ec_explicit_prime_params_nc);
--    OSSL_PARAM_free(ec_explicit_prime_params_explicit);
-+/*    OSSL_PARAM_free(ec_explicit_prime_params_explicit);*/
-     OSSL_PARAM_BLD_free(bld_prime_nc);
-     OSSL_PARAM_BLD_free(bld_prime);
- # ifndef OPENSSL_NO_EC2M
-@@ -1449,7 +1449,7 @@ void cleanup_tests(void)
- #ifndef OPENSSL_NO_EC
-     FREE_DOMAIN_KEYS(EC);
-     FREE_DOMAIN_KEYS(ECExplicitPrimeNamedCurve);
--    FREE_DOMAIN_KEYS(ECExplicitPrime2G);
-+/*    FREE_DOMAIN_KEYS(ECExplicitPrime2G);*/
- # ifndef OPENSSL_NO_EC2M
-     FREE_DOMAIN_KEYS(ECExplicitTriNamedCurve);
-     FREE_DOMAIN_KEYS(ECExplicitTri2G);
-diff -up openssl-3.0.1/test/recipes/30-test_evp_data/evppkey_ecdsa.txt.disable_explicit_ec openssl-3.0.1/test/recipes/30-test_evp_data/evppkey_ecdsa.txt
---- openssl-3.0.1/test/recipes/30-test_evp_data/evppkey_ecdsa.txt.disable_explicit_ec	2022-03-25 11:20:50.920949208 +0100
-+++ openssl-3.0.1/test/recipes/30-test_evp_data/evppkey_ecdsa.txt	2022-03-25 11:21:13.177147598 +0100
-@@ -121,18 +121,6 @@ AAAA//////////+85vqtpxeehPO5ysL8YyVRAgEB
- 3ev1gTwRBduzqqlwd54AUSgI+pjttW8zrWNitO8H1sf59MPWOESKxNtZ1+Nl
- -----END PRIVATE KEY-----
- 
--PrivateKey = EC_EXPLICIT
-------BEGIN PRIVATE KEY-----
--MIIBeQIBADCCAQMGByqGSM49AgEwgfcCAQEwLAYHKoZIzj0BAQIhAP////8AAAAB
--AAAAAAAAAAAAAAAA////////////////MFsEIP////8AAAABAAAAAAAAAAAAAAAA
--///////////////8BCBaxjXYqjqT57PrvVV2mIa8ZR0GsMxTsPY7zjw+J9JgSwMV
--AMSdNgiG5wSTamZ44ROdJreBn36QBEEE5JcIvn36opqjEm/k59Al40rBAxWM2TPG
--l0L13Je51zHpfXQ9Z2o7IQicMXP4wSfJ0qCgg2bgydqoxlYrlLGuVQIhAP////8A
--AAAA//////////+85vqtpxeehPO5ysL8YyVRAgEBBG0wawIBAQQgec92jwduadCk
--OjoNRI+YT5Be5TkzZXzYCyTLkMOikDmhRANCAATtECEhQbLEaiUj/Wu0qjcr81lL
--46dx5zYgArz/iaSNJ3W80oO+F7v04jlQ7wxQzg96R0bwKiMeq5CcW9ZFt6xg
-------END PRIVATE KEY-----
--
- PrivateKey = B-163
- -----BEGIN PRIVATE KEY-----
- MGMCAQAwEAYHKoZIzj0CAQYFK4EEAA8ETDBKAgEBBBUDnQW0mLiHVha/jqFznX/K
-diff -up openssl-3.0.9/test/ectest.c.noec openssl-3.0.9/test/ectest.c
---- openssl-3.0.9/test/ectest.c.noec	2023-07-27 11:30:24.078979261 +0200
-+++ openssl-3.0.9/test/ectest.c	2023-07-27 11:35:12.335576107 +0200
-@@ -2301,10 +2301,11 @@ static int do_test_custom_explicit_fromd
+diff --git a/test/ectest.c b/test/ectest.c
+index 4890b0555e..e11aec5b3b 100644
+--- a/test/ectest.c
++++ b/test/ectest.c
+@@ -2301,10 +2301,11 @@ static int do_test_custom_explicit_fromdata(EC_GROUP *group, BN_CTX *ctx,
      if (!TEST_ptr(params = OSSL_PARAM_BLD_to_param(bld))
          || !TEST_ptr(pctx = EVP_PKEY_CTX_new_from_name(NULL, "EC", NULL))
          || !TEST_int_gt(EVP_PKEY_fromdata_init(pctx), 0)
@@ -160,7 +88,7 @@ diff -up openssl-3.0.9/test/ectest.c.noec openssl-3.0.9/test/ectest.c
      /*- Check that all the set values are retrievable -*/
  
      /* There should be no match to a group name since the generator changed */
-@@ -2433,6 +2434,7 @@ static int do_test_custom_explicit_fromd
+@@ -2433,6 +2434,7 @@ static int do_test_custom_explicit_fromdata(EC_GROUP *group, BN_CTX *ctx,
  #endif
          )
          goto err;
@@ -206,3 +134,102 @@ diff -up openssl-3.0.9/test/ectest.c.noec openssl-3.0.9/test/ectest.c
      ret = 1;
  
   err:
+diff --git a/test/endecode_test.c b/test/endecode_test.c
+index 14648287eb..9a437d8c64 100644
+--- a/test/endecode_test.c
++++ b/test/endecode_test.c
+@@ -62,7 +62,7 @@ static BN_CTX *bnctx = NULL;
+ static OSSL_PARAM_BLD *bld_prime_nc = NULL;
+ static OSSL_PARAM_BLD *bld_prime = NULL;
+ static OSSL_PARAM *ec_explicit_prime_params_nc = NULL;
+-static OSSL_PARAM *ec_explicit_prime_params_explicit = NULL;
++/*static OSSL_PARAM *ec_explicit_prime_params_explicit = NULL;*/
+ 
+ # ifndef OPENSSL_NO_EC2M
+ static OSSL_PARAM_BLD *bld_tri_nc = NULL;
+@@ -1009,9 +1009,9 @@ IMPLEMENT_TEST_SUITE_LEGACY(EC, "EC")
+ DOMAIN_KEYS(ECExplicitPrimeNamedCurve);
+ IMPLEMENT_TEST_SUITE(ECExplicitPrimeNamedCurve, "EC", 1)
+ IMPLEMENT_TEST_SUITE_LEGACY(ECExplicitPrimeNamedCurve, "EC")
+-DOMAIN_KEYS(ECExplicitPrime2G);
+-IMPLEMENT_TEST_SUITE(ECExplicitPrime2G, "EC", 0)
+-IMPLEMENT_TEST_SUITE_LEGACY(ECExplicitPrime2G, "EC")
++/*DOMAIN_KEYS(ECExplicitPrime2G);*/
++/*IMPLEMENT_TEST_SUITE(ECExplicitPrime2G, "EC", 0)*/
++/*IMPLEMENT_TEST_SUITE_LEGACY(ECExplicitPrime2G, "EC")*/
+ # ifndef OPENSSL_NO_EC2M
+ DOMAIN_KEYS(ECExplicitTriNamedCurve);
+ IMPLEMENT_TEST_SUITE(ECExplicitTriNamedCurve, "EC", 1)
+@@ -1352,7 +1352,7 @@ int setup_tests(void)
+         || !create_ec_explicit_prime_params_namedcurve(bld_prime_nc)
+         || !create_ec_explicit_prime_params(bld_prime)
+         || !TEST_ptr(ec_explicit_prime_params_nc = OSSL_PARAM_BLD_to_param(bld_prime_nc))
+-        || !TEST_ptr(ec_explicit_prime_params_explicit = OSSL_PARAM_BLD_to_param(bld_prime))
++/*        || !TEST_ptr(ec_explicit_prime_params_explicit = OSSL_PARAM_BLD_to_param(bld_prime))*/
+ # ifndef OPENSSL_NO_EC2M
+         || !TEST_ptr(bld_tri_nc = OSSL_PARAM_BLD_new())
+         || !TEST_ptr(bld_tri = OSSL_PARAM_BLD_new())
+@@ -1380,7 +1380,7 @@ int setup_tests(void)
+     TEST_info("Generating EC keys...");
+     MAKE_DOMAIN_KEYS(EC, "EC", EC_params);
+     MAKE_DOMAIN_KEYS(ECExplicitPrimeNamedCurve, "EC", ec_explicit_prime_params_nc);
+-    MAKE_DOMAIN_KEYS(ECExplicitPrime2G, "EC", ec_explicit_prime_params_explicit);
++/*    MAKE_DOMAIN_KEYS(ECExplicitPrime2G, "EC", ec_explicit_prime_params_explicit);*/
+ # ifndef OPENSSL_NO_EC2M
+     MAKE_DOMAIN_KEYS(ECExplicitTriNamedCurve, "EC", ec_explicit_tri_params_nc);
+     MAKE_DOMAIN_KEYS(ECExplicitTri2G, "EC", ec_explicit_tri_params_explicit);
+@@ -1423,8 +1423,8 @@ int setup_tests(void)
+         ADD_TEST_SUITE_LEGACY(EC);
+         ADD_TEST_SUITE(ECExplicitPrimeNamedCurve);
+         ADD_TEST_SUITE_LEGACY(ECExplicitPrimeNamedCurve);
+-        ADD_TEST_SUITE(ECExplicitPrime2G);
+-        ADD_TEST_SUITE_LEGACY(ECExplicitPrime2G);
++/*        ADD_TEST_SUITE(ECExplicitPrime2G);*/
++/*        ADD_TEST_SUITE_LEGACY(ECExplicitPrime2G);*/
+ # ifndef OPENSSL_NO_EC2M
+         ADD_TEST_SUITE(ECExplicitTriNamedCurve);
+         ADD_TEST_SUITE_LEGACY(ECExplicitTriNamedCurve);
+@@ -1461,7 +1461,7 @@ void cleanup_tests(void)
+ {
+ #ifndef OPENSSL_NO_EC
+     OSSL_PARAM_free(ec_explicit_prime_params_nc);
+-    OSSL_PARAM_free(ec_explicit_prime_params_explicit);
++/*    OSSL_PARAM_free(ec_explicit_prime_params_explicit);*/
+     OSSL_PARAM_BLD_free(bld_prime_nc);
+     OSSL_PARAM_BLD_free(bld_prime);
+ # ifndef OPENSSL_NO_EC2M
+@@ -1483,7 +1483,7 @@ void cleanup_tests(void)
+ #ifndef OPENSSL_NO_EC
+     FREE_DOMAIN_KEYS(EC);
+     FREE_DOMAIN_KEYS(ECExplicitPrimeNamedCurve);
+-    FREE_DOMAIN_KEYS(ECExplicitPrime2G);
++/*    FREE_DOMAIN_KEYS(ECExplicitPrime2G);*/
+ # ifndef OPENSSL_NO_EC2M
+     FREE_DOMAIN_KEYS(ECExplicitTriNamedCurve);
+     FREE_DOMAIN_KEYS(ECExplicitTri2G);
+diff --git a/test/recipes/30-test_evp_data/evppkey_ecdsa.txt b/test/recipes/30-test_evp_data/evppkey_ecdsa.txt
+index ec3c032aba..584ecee0eb 100644
+--- a/test/recipes/30-test_evp_data/evppkey_ecdsa.txt
++++ b/test/recipes/30-test_evp_data/evppkey_ecdsa.txt
+@@ -133,18 +133,6 @@ AAAA//////////+85vqtpxeehPO5ysL8YyVRAgEBBG0wawIBAQQgiUTxtr5vLVjj
+ 3ev1gTwRBduzqqlwd54AUSgI+pjttW8zrWNitO8H1sf59MPWOESKxNtZ1+Nl
+ -----END PRIVATE KEY-----
+ 
+-PrivateKey = EC_EXPLICIT
+------BEGIN PRIVATE KEY-----
+-MIIBeQIBADCCAQMGByqGSM49AgEwgfcCAQEwLAYHKoZIzj0BAQIhAP////8AAAAB
+-AAAAAAAAAAAAAAAA////////////////MFsEIP////8AAAABAAAAAAAAAAAAAAAA
+-///////////////8BCBaxjXYqjqT57PrvVV2mIa8ZR0GsMxTsPY7zjw+J9JgSwMV
+-AMSdNgiG5wSTamZ44ROdJreBn36QBEEE5JcIvn36opqjEm/k59Al40rBAxWM2TPG
+-l0L13Je51zHpfXQ9Z2o7IQicMXP4wSfJ0qCgg2bgydqoxlYrlLGuVQIhAP////8A
+-AAAA//////////+85vqtpxeehPO5ysL8YyVRAgEBBG0wawIBAQQgec92jwduadCk
+-OjoNRI+YT5Be5TkzZXzYCyTLkMOikDmhRANCAATtECEhQbLEaiUj/Wu0qjcr81lL
+-46dx5zYgArz/iaSNJ3W80oO+F7v04jlQ7wxQzg96R0bwKiMeq5CcW9ZFt6xg
+------END PRIVATE KEY-----
+-
+ PrivateKey = B-163
+ -----BEGIN PRIVATE KEY-----
+ MGMCAQAwEAYHKoZIzj0CAQYFK4EEAA8ETDBKAgEBBBUDnQW0mLiHVha/jqFznX/K
+-- 
+2.41.0
+

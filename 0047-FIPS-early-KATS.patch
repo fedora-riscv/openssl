@@ -1,7 +1,22 @@
-diff -up openssl-3.0.1/providers/fips/self_test.c.earlykats openssl-3.0.1/providers/fips/self_test.c
---- openssl-3.0.1/providers/fips/self_test.c.earlykats	2022-01-19 13:10:00.635830783 +0100
-+++ openssl-3.0.1/providers/fips/self_test.c	2022-01-19 13:11:43.309342656 +0100
-@@ -362,6 +362,16 @@ int SELF_TEST_post(SELF_TEST_POST_PARAMS
+From 0242c0317b7c7874148c456aaab1e8eeb156d7c1 Mon Sep 17 00:00:00 2001
+From: rpm-build <rpm-build>
+Date: Mon, 31 Jul 2023 09:41:28 +0200
+Subject: [PATCH 22/35] 0047-FIPS-early-KATS.patch
+
+Patch-name: 0047-FIPS-early-KATS.patch
+Patch-id: 47
+Patch-status: |
+    # Execute KATS before HMAC verification
+From-dist-git-commit: 9409bc7044cf4b5773639cce20f51399888c45fd
+---
+ providers/fips/self_test.c | 22 ++++++++++------------
+ 1 file changed, 10 insertions(+), 12 deletions(-)
+
+diff --git a/providers/fips/self_test.c b/providers/fips/self_test.c
+index ef56002854..062d9df84a 100644
+--- a/providers/fips/self_test.c
++++ b/providers/fips/self_test.c
+@@ -414,6 +414,16 @@ int SELF_TEST_post(SELF_TEST_POST_PARAMS *st, int on_demand_test)
      if (ev == NULL)
          goto end;
  
@@ -18,11 +33,10 @@ diff -up openssl-3.0.1/providers/fips/self_test.c.earlykats openssl-3.0.1/provid
      module_checksum = fips_hmac_container;
      checksum_len = sizeof(fips_hmac_container);
  
-@@ -411,18 +421,6 @@ int SELF_TEST_post(SELF_TEST_POST_PARAMS
-             kats_already_passed = 1;
+@@ -464,18 +474,6 @@ int SELF_TEST_post(SELF_TEST_POST_PARAMS *st, int on_demand_test)
          }
      }
--
+ 
 -    /*
 -     * Only runs the KAT's during installation OR on_demand().
 -     * NOTE: If the installation option 'self_test_onload' is chosen then this
@@ -34,6 +48,10 @@ diff -up openssl-3.0.1/providers/fips/self_test.c.earlykats openssl-3.0.1/provid
 -            goto end;
 -        }
 -    }
- 
+-
      /* Verify that the RNG has been restored properly */
      testrand = EVP_RAND_fetch(st->libctx, "TEST-RAND", NULL);
+     if (testrand == NULL
+-- 
+2.41.0
+
