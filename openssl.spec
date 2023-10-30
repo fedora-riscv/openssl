@@ -29,7 +29,7 @@ print(string.sub(hash, 0, 16))
 Summary: Utilities from the general purpose cryptography library with TLS implementation
 Name: openssl
 Version: 3.1.4
-Release: 1%{?dist}
+Release: 2%{?dist}
 Epoch: 1
 Source: openssl-%{version}.tar.gz
 Source2: Makefile.certificate
@@ -289,7 +289,7 @@ export HASHBANGPERL=/usr/bin/perl
 	enable-cms enable-md2 enable-rc5 ${ktlsopt} enable-fips\
 	no-mdc2 no-ec2m no-sm2 no-sm4 enable-buildtest-c++\
 	shared  ${sslarch} $RPM_OPT_FLAGS '-DDEVRANDOM="\"/dev/urandom\"" -DREDHAT_FIPS_VERSION="\"%{fips}\""'\
-	-Wl,--allow-multiple-definition
+	-ggdb3 -Wl,--allow-multiple-definition
 
 # Do not run this in a production package the FIPS symbols must be patched-in
 #util/mkdef.pl crypto update
@@ -478,6 +478,9 @@ install -m644 %{SOURCE9} \
 %ldconfig_scriptlets libs
 
 %changelog
+* Mon Oct 30 2023 Dmitry Belyavskiy <dbelyavs@redhat.com> - 1:3.1.4-2
+- Increasing amount of debug information in builds
+
 * Thu Oct 26 2023 Sahana Prasad <sahana@redhat.com> - 1:3.1.4-1
 - Rebase to upstream version 3.1.4
 
