@@ -1,20 +1,22 @@
-From 5b2ec9a54037d7b007324bf53e067e73511cdfe4 Mon Sep 17 00:00:00 2001
-From: Tomas Mraz <tmraz@fedoraproject.org>
-Date: Thu, 26 Nov 2020 14:00:16 +0100
-Subject: Add FIPS_mode() compatibility macro
+From 8e29a10b39a649d751870eb1fd1b8c388e66acc3 Mon Sep 17 00:00:00 2001
+From: rpm-build <rpm-build>
+Date: Mon, 31 Jul 2023 09:41:27 +0200
+Subject: [PATCH 08/35] 0008-Add-FIPS_mode-compatibility-macro.patch
 
-The macro calls EVP_default_properties_is_fips_enabled() on the
-default context.
+Patch-name: 0008-Add-FIPS_mode-compatibility-macro.patch
+Patch-id: 8
+Patch-status: |
+    # Add FIPS_mode() compatibility macro
+From-dist-git-commit: 9409bc7044cf4b5773639cce20f51399888c45fd
 ---
- include/openssl/crypto.h.in |  1 +
- include/openssl/fips.h      | 25 +++++++++++++++++++++++++
- test/property_test.c        | 13 +++++++++++++
- 3 files changed, 39 insertions(+)
+ include/openssl/fips.h | 26 ++++++++++++++++++++++++++
+ test/property_test.c   | 14 ++++++++++++++
+ 2 files changed, 40 insertions(+)
  create mode 100644 include/openssl/fips.h
 
 diff --git a/include/openssl/fips.h b/include/openssl/fips.h
 new file mode 100644
-index 0000000000..c64f0f8e8f
+index 0000000000..4162cbf88e
 --- /dev/null
 +++ b/include/openssl/fips.h
 @@ -0,0 +1,26 @@
@@ -44,13 +46,14 @@ index 0000000000..c64f0f8e8f
 +}
 +# endif
 +#endif
-diff -up openssl-3.0.0-beta1/test/property_test.c.fips-macro openssl-3.0.0-beta1/test/property_test.c
---- openssl-3.0.0-beta1/test/property_test.c.fips-macro	2021-06-29 12:14:58.851557698 +0200
-+++ openssl-3.0.0-beta1/test/property_test.c	2021-06-29 12:17:14.630143832 +0200
-@@ -488,6 +488,19 @@ static int test_property_list_to_string(
+diff --git a/test/property_test.c b/test/property_test.c
+index 45b1db3e85..8894c1c1cb 100644
+--- a/test/property_test.c
++++ b/test/property_test.c
+@@ -677,6 +677,19 @@ static int test_property_list_to_string(int i)
      return ret;
  }
-
+ 
 +#include <openssl/fips.h>
 +static int test_downstream_FIPS_mode(void)
 +{
@@ -67,7 +70,7 @@ diff -up openssl-3.0.0-beta1/test/property_test.c.fips-macro openssl-3.0.0-beta1
  int setup_tests(void)
  {
      ADD_TEST(test_property_string);
-@@ -500,6 +512,7 @@ int setup_tests(void)
+@@ -690,6 +703,7 @@ int setup_tests(void)
      ADD_TEST(test_property);
      ADD_TEST(test_query_cache_stochastic);
      ADD_TEST(test_fips_mode);
@@ -75,3 +78,6 @@ diff -up openssl-3.0.0-beta1/test/property_test.c.fips-macro openssl-3.0.0-beta1
      ADD_ALL_TESTS(test_property_list_to_string, OSSL_NELEM(to_string_tests));
      return 1;
  }
+-- 
+2.41.0
+
